@@ -1,0 +1,24 @@
+import express from 'express'
+import cors from 'cors'
+import multer from 'multer'
+import { config } from 'dotenv'
+
+import connectServer from './config/connectServer.js'
+import cloudinaryConf from './config/cloudinarySetup.js'
+
+import user from './controller/user.js'
+
+console.clear()
+
+export const server = express()
+const storage = multer.diskStorage({ filename: (req, file, cb) => { cb(null, `${Date.now()}${file.originalname}`) } })
+const upload = multer({ storage })
+
+server.use(cors())
+server.use(express.json())
+
+config()
+connectServer()
+cloudinaryConf()
+
+server.post("/user/registration", upload.any(), user.registration)

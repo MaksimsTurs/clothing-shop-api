@@ -1,1 +1,0 @@
-# diverse-clothing-shop
