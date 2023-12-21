@@ -22,5 +22,4 @@ config()
 connectServer()
 cloudinaryConf()
 
-server.get('/', (req, res) => res.status(200).send({ message: 'SUCCES' }))
-// server.post("/user/registration", upload.any(), user.registration)
+server.post("/user/registration", upload.any(), user.registration)
