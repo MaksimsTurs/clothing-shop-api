@@ -11,14 +11,16 @@ import user from './controller/user.js'
 console.clear()
 
 export const server = express()
-const storage = multer.diskStorage({ filename: (req, file, cb) => { cb(null, `${Date.now()}${file.originalname}`) } })
-const upload = multer({ storage })
 
 server.use(cors())
 server.use(express.json())
+
+const storage = multer.diskStorage({ filename: (req, file, cb) => { cb(null, `${Date.now()}${file.originalname}`) } })
+const upload = multer({ storage })
 
 config()
 connectServer()
 cloudinaryConf()
 
+server.get('/', (req, res) => res.status(200).send({ message: 'SUCCES' }))
 server.post("/user/registration", upload.any(), user.registration)
