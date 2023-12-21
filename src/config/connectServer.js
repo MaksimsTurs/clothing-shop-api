@@ -1,4 +1,4 @@
-import { server } from "../index.js";
+import { server } from "../../index.js";
 
 import { config } from 'dotenv'
 

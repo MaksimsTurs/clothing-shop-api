@@ -3,10 +3,10 @@ import cors from 'cors'
 import multer from 'multer'
 import { config } from 'dotenv'
 
-import connectServer from './config/connectServer.js'
-import cloudinaryConf from './config/cloudinarySetup.js'
+import connectServer from './src/config/connectServer.js'
+import cloudinaryConf from './src/config/cloudinarySetup.js'
 
-import user from './controller/user.js'
+import user from './src/controller/user.js'
 
 console.clear()
 
