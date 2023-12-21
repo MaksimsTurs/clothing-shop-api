@@ -15,12 +15,12 @@ export const server = express()
 server.use(cors())
 server.use(express.json())
 
-const storage = multer.diskStorage({ filename: (req, file, cb) => { cb(null, `${Date.now()}${file.originalname}`) } })
-const upload = multer({ storage })
+// const storage = multer.diskStorage({ filename: (req, file, cb) => { cb(null, `${Date.now()}${file.originalname}`) } })
+// const upload = multer({ storage })
 
 config()
 connectServer()
-cloudinaryConf()
+// cloudinaryConf()
 
 server.get('/', (req, res) => res.status(200).send({ message: 'SUCCES' }))
-server.post("/user/registration", upload.any(), user.registration)
+// server.post("/user/registration", upload.any(), user.registration)
