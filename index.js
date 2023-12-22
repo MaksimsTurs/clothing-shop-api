@@ -4,7 +4,6 @@ import multer from 'multer'
 import { config } from 'dotenv'
 
 import connectServer from './src/config/connectServer.js'
-import cloudinaryConf from './src/config/cloudinarySetup.js'
 
 import user from './src/controller/user.js'
 
@@ -20,6 +19,5 @@ const upload = multer({ storage })
 
 config()
 connectServer()
-cloudinaryConf()
 
 server.post("/user/registration", upload.any(), user.registration)
