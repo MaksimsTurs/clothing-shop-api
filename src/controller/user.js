@@ -6,7 +6,7 @@ const user = {
     console.log('[SERVER]: Registration')
 
     try {
-      cloudinaryConf
+      cloudinaryConf()
       const d = await cloudinary.v2.uploader.upload(req.files[0].path)
       return res.status(200).send({ url: d.secure_url })
     } catch(e) {
