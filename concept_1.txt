@@ -1,0 +1,48 @@
+How Section list Array will see!
+{
+  title: "Custom Title",
+  items: [{..., precent: 0.5}],
+  date?: "some date"
+}
+
+How Product Section will be created!
+items is array of strings.
+const { items, precent, title } = req.body
+
+let products = [], product = {}, productSection = {}
+  
+Find product, push it in products Array and add precent!
+for(let index = 0; index < items.length; index++) {
+  product = await ProductModel.findById(items[index])
+
+  product.precent = precent
+
+  await product.save()
+
+	products.push(product)
+}
+
+[] = [...array, {...product, }]
+
+Create new Section with saved products Array!
+productSection = await SectionModel.create({ items: products, title })
+
+Send products Array to the client!
+return res.status(200).send({ section: productSection })
+
+How it will be deleted!
+let productsSection = [], productsID = [], product = {}
+
+productsSection = await SectionModel.findOne({ title })
+
+productsID = productSection.items.map(product => product._id)
+
+await SectionModel.deleteOne({ title })
+
+for(let index = 0; index < productsID; index++) {
+  product = await ProductModel.findById(productsID[index])
+
+  product.precent = 0
+
+  await product.save()
+}
