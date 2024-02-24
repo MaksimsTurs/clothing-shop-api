@@ -2,6 +2,10 @@ import { server } from '../../index.js'
 
 import loger from "../util/loger.js";
 
+import { config } from 'dotenv';
+
+config()
+
 export default function connectServer() {
   try {
     server.listen(process.env.DEV_PORT, process.env.DEV_HOST, () => {

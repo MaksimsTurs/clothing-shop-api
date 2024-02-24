@@ -1,6 +1,5 @@
 import express from 'express'
 import cors from 'cors'
-import { config } from 'dotenv'
 
 import connectServer from './src/config/connectServer.js'
 import connectMongoDB from './src/config/connectMongoDB.js'
@@ -20,7 +19,6 @@ export const server = express()
 server.use(cors())
 server.use(express.json())
 
-config()
 connectMongoDB()
 connectServer()
 
