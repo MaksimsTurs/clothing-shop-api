@@ -15,7 +15,7 @@ import common from './src/controller/common.js'
 loger.logCustomInfo('Date format: year-month-date', false)
 loger.logCustomInfo('Time format: hour-minute-second', false)
 
-const server = express()
+export const server = express()
 
 server.use(cors())
 server.use(express.json())
@@ -43,5 +43,3 @@ server.get('/product/get/all', product.getAllProducts)
 server.get('/product/get/by-id/:id/', product.getProductByID)
 server.get('/product/get/by-title/:title', product.getProductByTitle)
 server.post('/product/pagination/filter', product.productPaginationFilter)  
-
-export default server
