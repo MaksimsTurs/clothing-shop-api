@@ -17,6 +17,7 @@ const admin = {
 
 		const { code, message } = await userControllU(req.params.token || req.body.token)
 
+		loger.logResponseData({ code, message })
 		return res.status(code).send({ code, message })
 	},
 	getStoreData: async (req, res) => {
