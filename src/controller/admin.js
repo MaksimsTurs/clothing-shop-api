@@ -69,7 +69,7 @@ const admin = {
 			})
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '59 - 68')
-			return res.status(500).send({ message: RESPONSE_500() })
+			return res.status(500).send(RESPONSE_500())
 		}
 
 		try {
@@ -89,7 +89,7 @@ const admin = {
 			}
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '55 - 79')
-			return res.status(500).send({ message: RESPONSE_500 })
+			return res.status(500).send(RESPONSE_500())
 		}
 
 		//Save ID in existed section.
@@ -106,14 +106,14 @@ const admin = {
 			}			
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '55 - 79')
-			return res.status(500).send({ message: RESPONSE_500 })
+			return res.status(500).send(RESPONSE_500())
 		}
 
 		try {
 			await newProduct.save()
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '55 - 79')
-			return res.status(500).send({ message: RESPONSE_500 })
+			return res.status(500).send(RESPONSE_500())
 		}
 
 		loger.logResponseData({ newProduct, newSection })
@@ -136,7 +136,7 @@ const admin = {
 		try {
 			//Save base changes.
 			newProduct = await ProductModel.findById(productID)
-			if(!newProduct) return res.status(404).send({ message: RESPONSE_404 })
+			if(!newProduct) return res.status(404).send(RESPONSE_404())
 
 			newProduct._doc = {
 				...newProduct._doc,
@@ -148,7 +148,7 @@ const admin = {
 			}
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '55 - 79')
-			return res.status(500).send({ message: RESPONSE_500 })
+			return res.status(500).send(RESPONSE_500())
 		}
 
 		try {
@@ -166,7 +166,7 @@ const admin = {
 			}
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '55 - 79')
-			return res.status(500).send({ message: RESPONSE_500 })
+			return res.status(500).send(RESPONSE_500())
 		}
 
 		try {
@@ -183,7 +183,7 @@ const admin = {
 			await ProductModel.updateOne({ _id: newProduct._id }, newProduct)
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '55 - 79')
-			return res.status(500).send({ message: RESPONSE_500 })
+			return res.status(500).send(RESPONSE_500())
 		}
 
 		loger.logResponseData({ newProduct, newSection })
@@ -201,7 +201,7 @@ const admin = {
 			productSection = new SectionModel({ _id: new mongoose.Types.ObjectId(), title, precent, items: products })
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '90')
-			return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })
+			return res.status(500).send(RESPONSE_500())
 		}
 
 		try {
@@ -226,7 +226,7 @@ const admin = {
 			return res.status(200).send({ section: productSection })
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '97 - 104')
-			return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })
+			return res.status(500).send(RESPONSE_500())
 		}
 	},
 	editProductsSection: async (req, res) => {
@@ -240,7 +240,7 @@ const admin = {
 		try {
 			productsSection = await SectionModel.findById(id)
 
-			if(!productsSection) return res.status(404).send({ message: RESPONSE_404 })
+			if(!productsSection) return res.status(404).send(RESPONSE_404())
 			
 			productsSection.precent = precent || productsSection.precent || 0.0
 			productsSection.expiredDate = expiredDate || productsSection.expiredDate || ''
@@ -280,7 +280,7 @@ const admin = {
 			return res.status(200).send({ newSection: productsSection, newProducts: products })	
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '27 - 29')
-			return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })	
+			return res.status(500).send(RESPONSE_500())	
 		}
 	}
 }

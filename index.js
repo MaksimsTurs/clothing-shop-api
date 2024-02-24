@@ -41,5 +41,4 @@ server.get('/user/remove/:token', user.removeUser)
 
 server.get('/product/get/all', product.getAllProducts)
 server.get('/product/get/by-id/:id/', product.getProductByID)
-server.get('/product/get/by-title/:title', product.getProductByTitle)
 server.post('/product/pagination/filter', product.productPaginationFilter)  

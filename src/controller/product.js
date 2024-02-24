@@ -24,10 +24,10 @@ const product = {
       if(productsSections.length > 0) {
         loger.logResponseData({ productsSections: response })
         return res.status(200).send({ productsSections: response })
-      } else {
-        loger.logResponseData({ productsSections: [{ _id: 0, products: products }] })
-        return res.status(200).send({ productsSections: [{ _id: 0, products: products }] })
       }
+        
+      loger.logResponseData({ productsSections: [{ _id: 0, products: products }] })
+      return res.status(200).send({ productsSections: [{ _id: 0, products: products }] })
     } catch(error) {
       loger.logCatchError(error, import.meta.url, '13 - 27')
       return res.status(500).send(RESPONSE_500())
@@ -46,27 +46,6 @@ const product = {
     } catch(error) {
       loger.logCatchError(error, import.meta.url)
       return res.status(500).send(RESPONSE_500())
-    }
-  },
-  getProductByTitle: async (req, res) => {
-    loger.logURLRequest(req.protocol, req.hostname, req.originalUrl, req.body)
-
-    const { title } = req.params
-
-    let products = [], productsResponse = []
-
-    try {
-      products = await ProductModel.find({})
-
-      for(let index = 0; index < products.length; index++) {
-        if(products[index].title.search(title) !== -1) productsResponse = [...productsResponse, products[index]]
-      }
-
-      loger.logResponseData({ products: productsResponse })
-      return res.status(200).send({ products: productsResponse })
-    } catch(error) {
-      loger.logCatchError(error, import.meta.url)
-      return res.status(500).send({ errorMessage: process.env.SERVER_500_RESPONSE_MESSAGE })
     }
   },
   productPaginationFilter: async (req, res) => {
@@ -89,7 +68,7 @@ const product = {
         // .where('price').lte(price === 0 ? 5000 : price)
         // .where('rating').lte(rating === 0 ? 5000 : rating)
 
-      maxPages = Math.round(filteredProducts.length / Number(process.env.MAX_CONTENT_PER_PAGE))
+        maxPages = Math.round(filteredProducts.length / Number(process.env.MAX_CONTENT_PER_PAGE))
       filteredProducts = filteredProducts.slice(start, end)
       productsLength = (await ProductModel.find({})).length
       productsRange = { max: end, min: start }

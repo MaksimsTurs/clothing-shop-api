@@ -36,11 +36,11 @@ const user = {
     } = validateUserData(req.body)
 
     //------------------------ Validate User input ---------------------------//
-    if(!isFirstNameValid()) return res.status(400).send(RESPONSE_400())
-    if(!isSecondNameValied()) return res.status(400).send(RESPONSE_400())
-    if(!isPasswordValid()) return res.status(400).send(RESPONSE_400())
+    if(!isFirstNameValid())       return res.status(400).send(RESPONSE_400())
+    if(!isSecondNameValied())     return res.status(400).send(RESPONSE_400())
+    if(!isPasswordValid())        return res.status(400).send(RESPONSE_400())
     if(!isConfirmPasswordValid()) return res.status(400).send(RESPONSE_400())
-    if(!isEmailValid()) return res.status(400).send(RESPONSE_400())
+    if(!isEmailValid())           return res.status(400).send(RESPONSE_400())
     //-----------------------------------------------------------------------//
 
     try {
@@ -92,29 +92,39 @@ const user = {
 
     try {
       existedUser = await UserModel.findOne({ $and: [{ firstName }, { email }] })
+      if(!existedUser) return res.status(404).send(RESPONSE_404("User not exist!"))
     } catch(error) {
       loger.logCatchError(error, import.meta.url)
-      return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })
+      return res.status(500).send(RESPONSE_500())
     }
 
-    if(!existedUser) return res.status(404).send({ message: 'User not exist!' })
+    const { 
+      isEmailValid,
+      isFirstNameValid,
+      isPasswordValid,
+    } = validateUserData(req.body)
+
+    //------------------------ Validate User input ---------------------------//
+    if(!isFirstNameValid())       return res.status(400).send(RESPONSE_400())
+    if(!isPasswordValid())        return res.status(400).send(RESPONSE_400())
+    if(!isEmailValid())           return res.status(400).send(RESPONSE_400())
+    //-----------------------------------------------------------------------//
 
     try {
       isLogged = await bcrypt.compare(password, existedUser.password)
+      if(isLogged) {
+        existedUser.token = jwt.sign({ id: existedUser._id }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '1m' })
+        
+        await existedUser.save()
+  
+        return res.status(200).send({ token: existedUser.token, avatar: existedUser.avatar, firstName: existedUser.firstName, secondName: existedUser.secondName })
+      }
+
+      return res.status(400).send(RESPONSE_404("User not exist!"))
     } catch(error) {
       loger.logCatchError(error, import.meta.url)
-      return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })
+      return res.status(500).send(RESPONSE_500())
     }    
-    
-    if(isLogged) {
-      existedUser.token = jwt.sign({ id: existedUser._id }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '1m' })
-      
-      await existedUser.save()
-
-      return res.status(200).send({ token: existedUser.token, avatar: existedUser.avatar, firstName: existedUser.firstName, secondName: existedUser.secondName })
-    }
-
-    return res.status(400).send({ mesasge: 'Password is wrong!' })
   },
   getUserByToken: async (req, res) => {
     loger.logURLRequest(req.protocol, req.hostname, req.originalUrl, req.body)
