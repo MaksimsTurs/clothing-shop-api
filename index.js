@@ -14,7 +14,7 @@ import common from './src/controller/common.js'
 loger.logCustomInfo('Date format: year-month-date', false)
 loger.logCustomInfo('Time format: hour-minute-second', false)
 
-export const server = express()
+export default server = express() 
 
 server.use(cors())
 server.use(express.json())
