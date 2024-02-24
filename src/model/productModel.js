@@ -1,15 +1,17 @@
 import { model, Schema } from 'mongoose'
 
-export const Product = new Schema(
+const Product = new Schema(
 	{
+		_id: Schema.Types.ObjectId,
+		sectionID: String,
 		title: String,
 		description: String,
-		cost: Number,
-		precent: Number,
+		price: Number,
 		stock: Number,
+		precent: Number,
 		rating: Number,
 		images: Array,
-		inSection: Boolean
+		categories: Array
 	},
 	{ timestamps: true }
 )

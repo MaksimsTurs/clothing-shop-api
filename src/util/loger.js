@@ -39,6 +39,10 @@ const loger = {
     console.log(`${chalk.redBright('[VALIDATION ERROR]:')} Validate failed!`)
     expressions.map(expression => console.log(`${chalk.redBright('[VALIDATION ERROR]:')} ${expression}`))
     console.log(`${chalk.blue('[SERVER INFO]:')} ${this.getLogTime()}`)
+  },
+  logResponseData: function(data) {
+    console.log(`${chalk.blue('[SERVER INFO]:')} ${this.getLogTime()}`)
+    console.log(`${chalk.blue('[SERVER INFO]:')} Response `, JSON.parse(JSON.stringify(data)))
   }
 }
 

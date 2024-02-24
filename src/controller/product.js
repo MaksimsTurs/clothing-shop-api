@@ -3,39 +3,67 @@ import SectionModel from '../model/productSectionModel.js'
 
 import loger from '../util/loger.js'
 
+import { RESPONSE_404, RESPONSE_500 } from '../constants/error-constans.js'
+
 const product = {
   getAllProducts: async (req, res) => {
     loger.logURLRequest(req.protocol, req.hostname, req.originalUrl, req.body)
     
-    let products = []
-    let productsSections = []
+    let products = [], productsSections = [], response = []
 
     try {
       products = await ProductModel.find()
       productsSections = await SectionModel.find()
+
+      // Save products Object in their Section. 
+      for(let index = 0; index < productsSections.length; index++) {
+        response = [...response, {...productsSections[index]._doc, products: []}] 
+        response[index].products = await ProductModel.find({ sectionID: productsSections[index]._id })
+      }
       
       if(productsSections.length > 0) {
-        return res.status(200).send({ productsSections: productsSections })
+        loger.logResponseData({ productsSections: response })
+        return res.status(200).send({ productsSections: response })
       } else {
-        return res.status(200).send({ productsSections: [{ _id: 0, items: products }] })
+        loger.logResponseData({ productsSections: [{ _id: 0, products: products }] })
+        return res.status(200).send({ productsSections: [{ _id: 0, products: products }] })
       }
-
     } catch(error) {
-      loger.logCatchError(error, import.meta.url)
-      return res.status(500).send({ errorMessage: process.env.SERVER_500_RESPONSE_MESSAGE })
+      loger.logCatchError(error, import.meta.url, '13 - 27')
+      return res.status(500).send(RESPONSE_500())
     }
   },
   getProductByID: async (req, res) => {
     loger.logURLRequest(req.protocol, req.hostname, req.originalUrl, req.body)
 
-    const { id } = req.params
-
     let product = {}
 
     try {
-      product = await ProductModel.findById(id)
-      if(!product) return res.status(404).send({ errorMessage: process.env.SERVER_404_RESPONSE_MESSAGE })
-      return res.status(200).send({ ...product._doc })
+      product = await ProductModel.findById(req.params.id)
+      if(!product) return res.status(404).send(RESPONSE_404("Product with this ID not finded!"))
+      loger.logResponseData({...product._doc})
+      return res.status(200).send({...product._doc})
+    } catch(error) {
+      loger.logCatchError(error, import.meta.url)
+      return res.status(500).send(RESPONSE_500())
+    }
+  },
+  getProductByTitle: async (req, res) => {
+    loger.logURLRequest(req.protocol, req.hostname, req.originalUrl, req.body)
+
+    const { title } = req.params
+
+    let products = [], productsResponse = []
+
+    try {
+      products = await ProductModel.find({})
+
+      for(let index = 0; index < products.length; index++) {
+        if(products[index].title.search(title) !== -1) productsResponse = [...productsResponse, products[index]]
+      }
+
+      loger.logResponseData({ products: productsResponse })
+      return res.status(200).send({ products: productsResponse })
     } catch(error) {
       loger.logCatchError(error, import.meta.url)
       return res.status(500).send({ errorMessage: process.env.SERVER_500_RESPONSE_MESSAGE })
@@ -44,29 +72,33 @@ const product = {
   productPaginationFilter: async (req, res) => {
     loger.logURLRequest(req.protocol, req.hostname, req.originalUrl, req.body)
 
-    const { dressType, price } = req.body
-    const { page } = req.params
+    const { category, price, rating, page } = req.body
 
+    const isCategorySelected = category.length > 0 ? true : false
     const start = Number(page) * Number(process.env.MAX_CONTENT_PER_PAGE)
     const end = Number(start) + Number(process.env.MAX_CONTENT_PER_PAGE)
 
     let filteredProducts = []
-    let pagesCount = 0
+    let maxPages = 0, productsLength = 0
+    let productsRange = { max: 0, min: 0 }
+    let currPage = Number(page)
 
     try {
-      if(price > 0) {
-        filteredProducts = await ProductModel.find().where('cost').lte(price)   
-      } else {
-        filteredProducts = await ProductModel.find()
-      }
+      filteredProducts = await ProductModel
+        .find(isCategorySelected ? { categories: { $in: category } } : {})
+        // .where('price').lte(price === 0 ? 5000 : price)
+        // .where('rating').lte(rating === 0 ? 5000 : rating)
 
-      pagesCount = Math.floor(filteredProducts.length / Number(process.env.MAX_CONTENT_PER_PAGE))
+      maxPages = Math.round(filteredProducts.length / Number(process.env.MAX_CONTENT_PER_PAGE))
       filteredProducts = filteredProducts.slice(start, end)
+      productsLength = (await ProductModel.find({})).length
+      productsRange = { max: end, min: start }
 
-      return res.status(200).send({ currentPageProducts: filteredProducts, pagesCount })
+      loger.logResponseData({ productsRange, productsLength, currPageProducts: filteredProducts, maxPages, currPage })
+      return res.status(200).send({ productsRange, productsLength, currPageProducts: filteredProducts, maxPages, currPage })
     } catch(error) {
-      loger.logCatchError(error, import.meta.url)
-      return res.status(500).send({ message: 'SERVER_ERROR' })
+      loger.logCatchError(error, import.meta.url, '87 - 96')
+      return res.status(500).send(RESPONSE_500())
     }
   }
 }

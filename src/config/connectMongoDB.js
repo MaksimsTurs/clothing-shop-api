@@ -1,7 +1,5 @@
 import { connect } from 'mongoose'
 
-import chalk from 'chalk'
-
 import loger from "../util/loger.js";
 
 export default async function connectMongoDB() {

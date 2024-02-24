@@ -1,12 +1,12 @@
 import { model, Schema } from 'mongoose'
 
-import { Product } from './productModel.js'
-
 export const ProductSection = new Schema(
 	{
+    _id: Schema.Types.ObjectId,
+    productID: Array,
     title: String,
-    items: [Product],
-    precent: Number
+    precent: Number,
+    expiredDate: Date
   },
 	{ timestamps: true }
 )

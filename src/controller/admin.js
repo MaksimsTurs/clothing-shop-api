@@ -1,17 +1,21 @@
 import loger from '../util/loger.js'
 import userControllU from '../util/userControllU.js'
+import isUndefinedOrNull from '../util/isUndefinedOrNull.js'
 
 import ProductModel from '../model/productModel.js'
 import UserModel from '../model/userModel.js'
 import SectionModel from '../model/productSectionModel.js'
 
 import { v2 as cloudinary } from 'cloudinary'
+import mongoose from 'mongoose'
+
+import { RESPONSE_404, RESPONSE_500 } from '../constants/error-constans.js'
 
 const admin = {
 	controllUser: async (req, res) => {
 		loger.logURLRequest(req.protocol, req.hostname, req.originalUrl, req.body)
 
-		const { code, message } = await userControllU(req.params.token || req.body.token || null)
+		const { code, message } = await userControllU(req.params.token || req.body.token)
 
 		return res.status(code).send({ code, message })
 	},
@@ -29,65 +33,171 @@ const admin = {
 				const { __v, token, password, ...userData } = user._doc
 				return userData
 			})
+
+			loger.logResponseData({ products, productsSection, users })
 			return res.status(200).send({ products, productsSection, users })
 		} catch(error) {
-			loger.logCatchError(error, import.meta.url, '27 - 29')
-			return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })
+			loger.logCatchError(error, import.meta.url, '28 - 38')
+			return res.status(500).send(RESPONSE_500())
 		}
 	},
 	addProduct: async (req, res) => {
 		loger.logURLRequest(req.protocol, req.hostname, req.originalUrl, req.body)
 
-		const { title, cost, inStock, description, sectionName } = req.body
-
+		const { title, price, inStock, description, selectedSection, token } = req.body
+		const sectionData = isUndefinedOrNull(selectedSection) ? undefined : JSON.parse(selectedSection)
 		const productImgs = req.files
 
-		let secureURL = '', newProduct = {}, sectionList = {}
+		let secureURL = ''
+		let newProduct = {}, newSection = {}
+
+		const { code, message } = await userControllU(token)
+
+		if(code !== 200) res.status(code).send({ code, message })
 
 		try {
-			//Create new Product and save their images.
-			newProduct = new ProductModel({ title, cost,	stock: inStock || 0,	description, rating: 0	})
-			
-			for (let index = 0; index < productImgs.length; index++) {
-				cloudinary.config({
-					cloud_name: process.env.CLOUDINARY_NAME,
-					api_key: process.env.CLOUDINARY_API_KEY,
-					api_secret: process.env.CLOUDINARY_API_SECRET,
-					secure: true,
-				})
+			//Create new Product.
+			newProduct = new ProductModel({ 
+				_id: new mongoose.Types.ObjectId(),
+				title,
+				description,
+				price: isUndefinedOrNull(price) ? 0 : price,
+				rating: 0,
+				stock: isUndefinedOrNull(inStock) ? 0 : inStock,
+				sectionID: !isUndefinedOrNull(selectedSection) ? selectedSection : null,
+			})
+		} catch(error) {
+			loger.logCatchError(error, import.meta.url, '59 - 68')
+			return res.status(500).send({ message: RESPONSE_500() })
+		}
 
-				secureURL = (await cloudinary.uploader.upload(productImgs[index].path)).secure_url
-				newProduct.images.push(secureURL)
+		try {
+			//Save Product Images URL links.
+			if(productImgs.length > 0) {
+				for (let index = 0; index < productImgs.length; index++) {
+					cloudinary.config({
+						cloud_name: process.env.CLOUDINARY_NAME,
+						api_key: process.env.CLOUDINARY_API_KEY,
+						api_secret: process.env.CLOUDINARY_API_SECRET,
+						secure: true,
+					})
+
+					secureURL = (await cloudinary.uploader.upload(productImgs[index].path)).secure_url
+					newProduct.images = [...newProduct.images, secureURL]
+				}
 			}
-
-			// If listNames is not undefined, save product in section.
-			if(sectionName) {
-				sectionList = await SectionModel.findOne({ title: sectionName })
-
-				newProduct.precent = sectionList.precent
-				newProduct.inSection = true
-				sectionList.items.unshift(newProduct)
-			
-				await sectionList.save()
-			}
-
-			await newProduct.save()
-
-			return res.status(200).send({...newProduct._doc})
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '55 - 79')
-			return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })
+			return res.status(500).send({ message: RESPONSE_500 })
 		}
+
+		//Save ID in existed section.
+		try {
+			if(sectionData) {
+				newSection = await SectionModel.findById(sectionData._id)
+				if(!newSection)	return res.status(404).send({ message: RESPONSE_404 })
+	
+				newSection.productID = [...newSection.productID, newProduct._id]
+				newProduct.sectionID = newSection._id
+				newProduct.precent = newSection.precent
+
+				await SectionModel.updateOne({ _id: newSection._id }, newSection)
+			}			
+		} catch(error) {
+			loger.logCatchError(error, import.meta.url, '55 - 79')
+			return res.status(500).send({ message: RESPONSE_500 })
+		}
+
+		try {
+			await newProduct.save()
+		} catch(error) {
+			loger.logCatchError(error, import.meta.url, '55 - 79')
+			return res.status(500).send({ message: RESPONSE_500 })
+		}
+
+		loger.logResponseData({ newProduct, newSection })
+		return res.status(200).send({ newProduct, newSection })
+	},
+	editProduct: async (req, res) => {
+		loger.logURLRequest(req.protocol, req.hostname, req.originalUrl, req.body)
+
+		const { selectedSection, title, price, inStock, description, token, productID } = req.body 
+		const sectionInfo = isUndefinedOrNull(selectedSection) ? undefined : JSON.parse(selectedSection)
+		const productIMGs = req.files
+
+		let secureURL = ''
+		let newProduct = {}, newSection = {}
+
+		const { code, message } = await userControllU(token)
+
+		if(code !== 200) return res.status(code).send({ message })
+
+		try {
+			//Save base changes.
+			newProduct = await ProductModel.findById(productID)
+			if(!newProduct) return res.status(404).send({ message: RESPONSE_404 })
+
+			newProduct._doc = {
+				...newProduct._doc,
+				title: isUndefinedOrNull(title) ? newProduct.title : title,
+				description: isUndefinedOrNull(description) ? newProduct.description : description,
+				price: isUndefinedOrNull(price) ? newProduct.price : price,
+				stock: isUndefinedOrNull(inStock) ? newProduct.stock : inStock,
+				images: []
+			}
+		} catch(error) {
+			loger.logCatchError(error, import.meta.url, '55 - 79')
+			return res.status(500).send({ message: RESPONSE_500 })
+		}
+
+		try {
+			//Save Product IMG Url's.
+			cloudinary.config({
+				cloud_name: process.env.CLOUDINARY_NAME,
+				api_key: process.env.CLOUDINARY_API_KEY,
+				api_secret: process.env.CLOUDINARY_API_SECRET,
+				secure: true,
+			})
+
+			for(let index = 0; index < productIMGs.length; index++) {
+				secureURL = (await cloudinary.uploader.upload(productIMGs[index].path)).secure_url
+				newProduct.images = [...newProduct.images, secureURL]
+			}
+		} catch(error) {
+			loger.logCatchError(error, import.meta.url, '55 - 79')
+			return res.status(500).send({ message: RESPONSE_500 })
+		}
+
+		try {
+			if(sectionInfo) {
+				newSection = await SectionModel.findById(sectionInfo._id)
+
+				newProduct.precent = newSection.precent || null
+				newProduct.sectionID = sectionInfo._id
+				newSection.productID = [...newSection.productID.filter(id => String(id) !== String(newProduct._id)), newProduct._id]
+
+				await SectionModel.updateOne({ _id: newSection._id }, newSection)
+			}
+
+			await ProductModel.updateOne({ _id: newProduct._id }, newProduct)
+		} catch(error) {
+			loger.logCatchError(error, import.meta.url, '55 - 79')
+			return res.status(500).send({ message: RESPONSE_500 })
+		}
+
+		loger.logResponseData({ newProduct, newSection })
+		return res.status(200).send({ newProduct, newSection })
 	},
 	addSection: async (req, res) => {
 		loger.logURLRequest(req.protocol, req.hostname, req.originalUrl, req.body)
 
 		const { items, precent, title } = req.body
 
-		let products = [], productsID = [], product = {}, productSection = {}
+		let products = []
+		let product = {}, productSection = {}
 
 		try {
-			productSection = SectionModel({ items: products, title, precent: precent || 0.0 })
+			productSection = new SectionModel({ _id: new mongoose.Types.ObjectId(), title, precent, items: products })
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '90')
 			return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })
@@ -95,65 +205,81 @@ const admin = {
 
 		try {
 			for(let index = 0; index < items.length; index++) {
+				//Find product for add to Products Section.
 				product = await ProductModel.findById(items[index])
-				if(productSection.precent > 0.0) product.precent = productSection.precent
-				product.inSection = true
+
+				product.precent = productSection.precent
+				product.inSection = title
+
 				products.push(product)
-				productsID.push(product._id)
+
+				//Save product changes (inSection and precent propertie).
 				await product.save()
 			}
 
+			//Save products in Product Section
 			productSection.items = products
+			
 			await productSection.save()
+			
+			return res.status(200).send({ section: productSection })
 		} catch(error) {
 			loger.logCatchError(error, import.meta.url, '97 - 104')
 			return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })
 		}
-		
-		return res.status(200).send({ section: productSection, productsID, products })
 	},
-	editProduct: async (req, res) => {
+	editProductsSection: async (req, res) => {
 		loger.logURLRequest(req.protocol, req.hostname, req.originalUrl, req.body)
 
-		const { title, cost, inStock, description, sectionName, token, id } = req.body
-		const { code, message } = await userControllU(token, true)	
+		const { items, title, precent, expiredDate, id, currentProductsID } = req.body
 
-		if(code !== 200) return res.status(code).send({ message })
-		
-		let existedProduct = {}, newProduct = {}, productsSection = {}
+		let product = {}, productsSection = {}
+		let products = []
 
 		try {
-			existedProduct = await ProductModel.findOne({ _id: id })
-		} catch(error) {
-			loger.logCatchError(error, import.meta.url, '126')
-			return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })
-		}
+			productsSection = await SectionModel.findById(id)
 
-		if(!existedProduct) return res.status(404).send({ message: process.env.SERVER_404_RESPONSE_MESSAGE })
+			if(!productsSection) return res.status(404).send({ message: RESPONSE_404 })
+			
+			productsSection.precent = precent || productsSection.precent || 0.0
+			productsSection.expiredDate = expiredDate || productsSection.expiredDate || ''
+			productsSection.title = title || productsSection.title
 
-		try {
-			newProduct = {
-				_id: existedProduct._id,
-				title: title || existedProduct.title,
-				description: description || existedProduct.description,
-				cost: cost || existedProduct.cost,
-				inStock: inStock || existedProduct.stock,
-				rating: existedProduct.rating,
-				createdAt: existedProduct.createdAt,
-				updatedAt: Date.now(),
-				inSection: existedProduct.inSection,
-				images: existedProduct.images,
-				precent: existedProduct.precent,
+			if(currentProductsID.length > 0) {
+				for(let index = 0; index < currentProductsID.length; index++) {
+					product = await ProductModel.findById(currentProductsID[index])
+
+					product.precent = precent || productsSection.precent || 0
+					product.sectionID = productsSection._id
+
+					productsSection.productID = [...productsSection.productID.filter(section => String(section._id) !== String(product._id)), product._id]
+
+					await product.save()
+				}
 			}
 
-			await ProductModel.updateOne({ title: existedProduct.title }, newProduct)
+			if(items.length > 0) {
+				for(let index = 0; index < items.length; index++) {
+					product = await ProductModel.findById(items[index])
 
-			await existedProduct.save()
+					product.precent = precent || productsSection.precent || 0
+					product.sectionID = productsSection._id
 
-			return res.status(200).send(newProduct)
+					productsSection.productID = [...productsSection.productID.filter(section => String(section._id) !== String(product._id)), product._id]
+					
+					await product.save()
+				}
+			}
+
+			await productsSection.save()
+
+			products = await ProductModel.find({})
+			
+			loger.logResponseData({ newSection: productsSection, newProducts: products })
+			return res.status(200).send({ newSection: productsSection, newProducts: products })	
 		} catch(error) {
-			loger.logCatchError(error, import.meta.url, '135 - 143')
-			return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })
+			loger.logCatchError(error, import.meta.url, '27 - 29')
+			return res.status(500).send({ message: process.env.SERVER_500_RESPONSE_MESSAGE })	
 		}
 	}
 }

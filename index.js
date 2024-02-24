@@ -1,6 +1,5 @@
 import express from 'express'
 import cors from 'cors'
-import bodyParser from 'body-parser'
 import { config } from 'dotenv'
 
 import connectServer from './src/config/connectServer.js'
@@ -19,25 +18,28 @@ loger.logCustomInfo('Time format: hour-minute-second', false)
 export const server = express()
 
 server.use(cors())
-server.use(bodyParser.json())
-server.use(bodyParser.urlencoded({ extended: true }))
+server.use(express.json())
 
 config()
 connectMongoDB()
 connectServer()
 
 server.post('/common/user/edit', upload.any(), common.editUserData)
+server.get('/common/get/statistic', common.websiteStatistic)
 
 server.get('/admin/check/:token', admin.controllUser)
-server.get('/admin/store/get/all', admin.getStoreData)
+server.get('/admin/get/store', admin.getStoreData)
 server.post('/admin/product/add', upload.any(), admin.addProduct)
 server.post('/admin/product/edit', upload.any(), admin.editProduct)
 server.post('/admin/product-section/add', admin.addSection)
+server.post('/admin/product-section/edit', admin.editProductsSection)
 
 server.get('/user/:token', user.getUserByToken)
 server.post("/user/registration", upload.any(), user.registration)
 server.post("/user/login", user.login)
+server.get('/user/remove/:token', user.removeUser)
 
 server.get('/product/get/all', product.getAllProducts)
 server.get('/product/get/by-id/:id/', product.getProductByID)
-server.post('/product/pagination/filter/:page', product.productPaginationFilter)
+server.get('/product/get/by-title/:title', product.getProductByTitle)
+server.post('/product/pagination/filter', product.productPaginationFilter)  
