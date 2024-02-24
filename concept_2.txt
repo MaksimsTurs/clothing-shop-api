@@ -1,3 +1,0 @@
-All will be see how in concet_1.txt
-but products will be pushed from products database to
-selected Section database.
