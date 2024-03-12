@@ -5,4 +5,4 @@ export const RESPONSE_404 = (userMess) => ({ code: 404, message: userMess || "Re
 export const RESPONSE_409 = (userMess) => ({ code: 409, message: userMess || "Resource alredy exist!" })
 
 //Server Errors.
-export const RESPONSE_500 = (userMess) => ({ code: 500, message: "Server Error!" })
+export const RESPONSE_500 = (userMess) => ({ code: 500, message: userMess || "Server Error!" })
