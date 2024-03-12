@@ -6,7 +6,7 @@ import loger from "../util/loger.js";
 config()
 
 export default async function connectDB() {
-  const database = process.env.NODE_ENV = 'dev' ? 'dev-db' : 'clothing-shop'
+  const database = 'clothing-shop'
 
   try {
     await connect(`${process.env.MONGO_DB_URI}${database}?retryWrites=true&w=majority`)
