@@ -104,6 +104,7 @@ const admin = {
 		const productIMGs = files // Array of files
 
 		let newProduct = {}, newSection = {}
+		console.log(isUndefinedOrNull(sectionData?._id))
 		
 		try {
 			if(sectionData) newSection = await findOne({ model: SectionModel, cacheKey: undefined, condition: { _id: sectionData._id } })
@@ -114,13 +115,16 @@ const admin = {
 				description: isUndefinedOrNull(description) ? newProduct.description : description,
 				price: isUndefinedOrNull(price) ? newProduct.price : price,
 				stock: isUndefinedOrNull(inStock) ? newProduct.stock : inStock,
-				precent: isUndefinedOrNull(newSection.precent) ? null : newSection.precent,
-				sectionID: isUndefinedOrNull(sectionData._id) ? null : sectionData._id,
-				images: await saveImages(productIMGs)
+				precent: isUndefinedOrNull(newSection?.precent) ? null : newSection.precent,
+				sectionID: isUndefinedOrNull(sectionData?._id) ? null : sectionData._id,
+				images: productIMGs.length > 0 ? await saveImages(productIMGs) : newProduct.images
 			}, { new: true })
-			newSection = await SectionModel.findByIdAndUpdate(sectionData._id, {
-				productID: [...newSection.productID.filter(id => String(id) !== String(newProduct._id)), newProduct._id]
-			}, { new: true })
+
+			if(sectionData) {
+				newSection = await SectionModel.findByIdAndUpdate(sectionData._id, {
+					productID: [...newSection.productID.filter(id => String(id) !== String(productID)), productID]
+				}, { new: true })
+			}
 
 			invalidateCacheKey('products')
 			invalidateCacheKey(`product-${productID}`)
@@ -129,6 +133,7 @@ const admin = {
 			loger.logResponse({ newProduct, newSection })
 			return res.status(200).send({ newProduct, newSection })
 		} catch(error) {
+			console.log(error)
 			loger.logError(error, import.meta.url, '109 - 130')
 			return res.status(500).send(RESPONSE_500())
 		}

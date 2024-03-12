@@ -37,7 +37,7 @@ const common = {
         email: email || existedUser.email,
         avatar: isUndefinedOrNull(existedUser.avatar) ? await saveImages(newAvatar) : existedUser.avatar,
         token: existedUser.token
-      })
+      }, { new: true })
 
       invalidateCacheKey('users')
       invalidateCacheKey(`user-${existedUser._id}`)
