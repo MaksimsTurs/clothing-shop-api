@@ -15,12 +15,10 @@ loger.logCustomText('Time format: hour-minute-second', false)
 
 const server = express() 
 
-export default server
-
 server.use(cors())
 server.use(express.json())
 
-setupServer()
+await setupServer()
 
 server.post('/common/user/edit', upload.any(), common.editUserData)
 server.get('/common/get/statistic', common.websiteStatistic)
@@ -43,3 +41,5 @@ server.get('/product/get/all', product.getAllProducts)
 server.get('/product/get/by-id/:id/', product.getProductByID)
 server.get('/product/section/remove/:title', product.removeProductSection)
 server.post('/product/pagination/filter', product.productPaginationFilter)
+
+export default server

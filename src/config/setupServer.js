@@ -11,7 +11,7 @@ import { DEV_HOST } from '../constants/string-constans.js'
 
 config()
 
-export default function setupServer() {
+export default async function setupServer() {
   try {
     server.listen(DEV_PORT, DEV_HOST, async () => {
       loger.logCustomText(`Connected to Server, Listen http://${DEV_HOST}:${DEV_PORT}`, true)
