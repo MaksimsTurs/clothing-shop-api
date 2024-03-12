@@ -18,6 +18,8 @@ const server = express()
 server.use(cors())
 server.use(express.json())
 
+export default server
+
 await setupServer()
 
 server.post('/common/user/edit', upload.any(), common.editUserData)
@@ -41,5 +43,3 @@ server.get('/product/get/all', product.getAllProducts)
 server.get('/product/get/by-id/:id/', product.getProductByID)
 server.get('/product/section/remove/:title', product.removeProductSection)
 server.post('/product/pagination/filter', product.productPaginationFilter)
-
-export default server
