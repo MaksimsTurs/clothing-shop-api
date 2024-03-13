@@ -59,7 +59,6 @@ const user = {
       })
 
       await registratedUser.save()
-      pushInCache(registratedUser, `user-${_id}`)
 
       loger.logResponse({ avatar: registratedUser.avatar, _id: registratedUser._id, firstName, secondName, token })
       return res.status(200).send({ avatar: registratedUser.avatar, _id: registratedUser._id, firstName, secondName, token })  
@@ -98,6 +97,7 @@ const user = {
       if(isLogged) {
         await UserModel.findByIdAndUpdate(existedUser._id, { token: jwt.sign({ id: existedUser._id }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '1m' }) })
         
+        pushInCache(existedUser, `user-${existedUser._id}`)
         loger.logResponse({ token: existedUser.token, avatar: existedUser.avatar, firstName: existedUser.firstName, secondName: existedUser.secondName })
         return res.status(200).send({ token: existedUser.token, avatar: existedUser.avatar, firstName: existedUser.firstName, secondName: existedUser.secondName })
       }
