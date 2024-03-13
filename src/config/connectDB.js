@@ -6,11 +6,14 @@ import loger from "../util/loger.js";
 config()
 
 export default async function connectDB() {
+  const currDB = process.env.NODE_ENV === 'dev' ? 'dev-db' : 'clothing-shop'
+  const DBURL = `${process.env.MONGO_DB_URI}${currDB}?retryWrites=true&w=majority`
+
   try {
-    await connect(process.env.MONGO_DB_URI)
+    await connect(DBURL)
     loger.logCustomText('Connected to MongoDB!', true)
-    loger.logCustomText(`DB URL: ${process.env.MONGO_DB_URI}`)
+    loger.logCustomText(`DB URL: ${DBURL}`)
   } catch(error) {
-    loger.logError(error, import.meta.url, '12 - 13')
+    throw loger.logError(error, import.meta.url, '12 - 13')
   }
 }

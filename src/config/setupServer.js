@@ -13,11 +13,9 @@ config()
 
 export default async function setupServer() {
   try {
-    server.listen(DEV_PORT, DEV_HOST, async () => {
-      loger.logCustomText(`Connected to Server, Listen http://${DEV_HOST}:${DEV_PORT}`, true)
-      await connectDB()
-    })  
+    server.listen(DEV_PORT, DEV_HOST, async () => loger.logCustomText(`Connected to Server, Listen http://${DEV_HOST}:${DEV_PORT}`, true))  
+    await connectDB()
   } catch(error) {
-    loger.logError(error, import.meta.url, '16 - 19')
+    throw loger.logError(error, import.meta.url, '16 - 19')
   }
 }
