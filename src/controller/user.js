@@ -82,7 +82,7 @@ const user = {
       existedUser = await UserModel.findOne({ $and: [{ firstName }, { email }] })
       if(!existedUser) return res.status(404).send(RESPONSE_404("User not exist!"))
     } catch(error) {
-      loger.logError(error, import.meta.url, '79 - 80')
+      loger.logError(error, import.meta.url, '82')
       return res.status(500).send(RESPONSE_500())
     }
 
@@ -104,7 +104,7 @@ const user = {
 
       return res.status(400).send(RESPONSE_404("User not exist!"))
     } catch(error) {
-      loger.logError(error, import.meta.url, '93 - 100')
+      loger.logError(error, import.meta.url, '96 - 105')
       return res.status(500).send(RESPONSE_500())
     }    
   },

@@ -6,7 +6,7 @@ import loger from "../util/loger.js";
 config()
 
 export default async function connectDB() {
-  const currDB = process.env.NODE_ENV === 'dev' ? 'dev-db' : 'clothing-shop'
+  const currDB = process.env.NODE_ENV.trim() === 'dev' ? 'dev-db' : 'clothing-shop'
   const DBURL = `${process.env.MONGO_DB_URI}${currDB}?retryWrites=true&w=majority`
 
   try {
