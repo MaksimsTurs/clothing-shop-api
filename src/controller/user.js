@@ -95,7 +95,7 @@ const user = {
     try {
       isLogged = await bcrypt.compare(password, existedUser.password)
       if(isLogged) {
-        await UserModel.findByIdAndUpdate(existedUser._id, { token: jwt.sign({ id: existedUser._id }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '1m' }) })
+        await UserModel.findByIdAndUpdate(existedUser._id, { token: jwt.sign({ _id: existedUser._id }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '1m' }) })
         
         pushInCache(existedUser, `user-${existedUser._id}`)
         loger.logResponse({ token: existedUser.token, avatar: existedUser.avatar, firstName: existedUser.firstName, secondName: existedUser.secondName })

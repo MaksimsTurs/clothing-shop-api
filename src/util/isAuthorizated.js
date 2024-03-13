@@ -22,8 +22,9 @@ export default async function isAuthorizated(secret, checkAdmin) {
     return RESPONSE_500()
   }
 
+
   try {
-    existedUser = await findOne({ model: UserModel, cacheKey: `user-${secret}`, condition: { _id: token._id } })
+    existedUser = await UserModel.findById(token._id)
     if(existedUser) {
       if(checkAdmin && existedUser.role !== 'admin') return RESPONSE_403("You have no permission!")
       return { code: 200, existedUser }

@@ -21,7 +21,7 @@ export default function validateUserData(object) {
       return true
     },
     isPasswordValid: () => {
-      if(password.length < 8 || password.length === 0 || confirmPassword !== password) {
+      if(password.length < 8 || password.length === 0) {
         loger.logValidationError([
           `password.length < 8 => ${password.length < 8} or`,
           `password.length === 0 => ${password.length === 0} or`,
