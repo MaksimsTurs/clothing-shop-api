@@ -9,7 +9,7 @@ export default async function findOne(option) {
 
   try {
     data = await model.findOne(condition)
-    pushInCache(data, cacheKey)
+    // pushInCache(data, cacheKey)
 
     return data
   } catch(error) {

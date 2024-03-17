@@ -38,8 +38,8 @@ const common = {
         token: existedUser.token
       }, { new: true })
 
-      invalidateCacheKey('users')
-      invalidateCacheKey(`user-${existedUser._id}`)
+      // invalidateCacheKey('users')
+      // invalidateCacheKey(`user-${existedUser._id}`)
       
       loger.logResponse(user)
       return res.status(200).send(user)
@@ -135,9 +135,9 @@ const common = {
 
         if(productIDs[index].sectionID) await SectionModel.updateOne({ _id: productIDs[index].sectionID }, { productID: { $pull: productIDs[index].id } })
       
-        invalidateCacheKey(`product-${productIDs[index].id}`)
-        invalidateCacheKey('products-section')
-        invalidateCacheKey('product')
+        // invalidateCacheKey(`product-${productIDs[index].id}`)
+        // invalidateCacheKey('products-section')
+        // invalidateCacheKey('product')
       }
 
       await ProductModel.deleteMany({ _id: { $in: toDelete } })

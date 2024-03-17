@@ -9,7 +9,7 @@ export default async function findMany(option) {
 
   try {
     data = await model.find(condition)
-    pushInCache(data, cacheKey)
+    // pushInCache(data, cacheKey)
 
     return data
   } catch(error) {

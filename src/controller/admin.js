@@ -91,7 +91,7 @@ const admin = {
 			}		
 			
 			await newProduct.save()
-			invalidateCacheKey('products')
+			// invalidateCacheKey('products')
 
 			loger.logResponse({ newProduct, newSection })
 			return res.status(200).send({ newProduct, newSection })	
@@ -131,9 +131,9 @@ const admin = {
 				}, { new: true })
 			}
 
-			invalidateCacheKey('products')
-			invalidateCacheKey(`product-${productID}`)
-			invalidateCacheKey('products-section')
+			// invalidateCacheKey('products')
+			// invalidateCacheKey(`product-${productID}`)
+			// invalidateCacheKey('products-section')
 
 			loger.logResponse({ newProduct, newSection })
 			return res.status(200).send({ newProduct, newSection })
@@ -158,13 +158,13 @@ const admin = {
 			//Find product for add to Products Section.
 			for(let index = 0; index < items.length; index++) {
 				product = await ProductModel.findByIdAndUpdate(items[index], { precent, sectionID: productSection._id }, { new: true })
-				invalidateCacheKey(`product-${items[index]}`)
+				// invalidateCacheKey(`product-${items[index]}`)
 			}
 			
 			await productSection.save()
 
-			invalidateCacheKey('products')
-			invalidateCacheKey('products-section')
+			// invalidateCacheKey('products')
+			// invalidateCacheKey('products-section')
 
 			loger.logResponse({ section: productSection })
 			return res.status(200).send({ section: productSection })
@@ -200,14 +200,14 @@ const admin = {
 
 					products.push(product)
 
-					invalidateCacheKey(`product-${productsID[index]}`)
+					// invalidateCacheKey(`product-${productsID[index]}`)
 				}
 			}
 
 			await productsSection.save()
 
-			invalidateCacheKey('products')
-			invalidateCacheKey('products-section')
+			// invalidateCacheKey('products')
+			// invalidateCacheKey('products-section')
 			
 			loger.logResponse({ newSection: productsSection, newProducts: products })
 			return res.status(200).send({ newSection: productsSection, newProducts: products })	

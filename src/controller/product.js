@@ -125,11 +125,11 @@ const product = {
 
       for(let index = 0; index < products.length; index++) {
         await ProductModel.findByIdAndUpdate(products[index]._id, { precent: null, sectionID: null })
-        invalidateCacheKey(`product-${products[index]._id}`)
+        // invalidateCacheKey(`product-${products[index]._id}`)
       }
 
-      invalidateCacheKey('products')
-      invalidateCacheKey('products-section')
+      // invalidateCacheKey('products')
+      // invalidateCacheKey('products-section')
 
       loger.logResponse({ code: 200, message: 'Succes' })
       return res.status(200).send({ code: 200, message: 'Succes' })
