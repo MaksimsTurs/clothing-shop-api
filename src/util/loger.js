@@ -21,12 +21,12 @@ const loger = {
     return `${path.replaceAll("file:///", "").replaceAll("%20", " ")}`
   },
   logRequest: function(protocol, host, url, body, params) {
-    console.log(`${chalk.greenBright(`[SERVER REQUEST ${this.getDate()}]:`)} Request on ${new URL(protocol + '://' + host + url).href}`)
-    if(body) console.log(`${chalk.greenBright(`[SERVER REQUEST ${this.getDate()}]:`)} Request body`, body)
-    if(params) console.log(`${chalk.greenBright(`[SERVER REQUEST ${this.getDate()}]:`)} Request params`, params)
+    console.log(`${chalk.greenBright(`[SERVER REQUEST ${this.getDate()}]:`)} request on ${new URL(protocol + '://' + host + url).href}`)
+    if(body) console.log(`${chalk.greenBright(`[SERVER REQUEST ${this.getDate()}]:`)} request body`, body)
+    if(params) console.log(`${chalk.greenBright(`[SERVER REQUEST ${this.getDate()}]:`)} request params`, params)
   },
   logResponse: function(data) {
-    console.log(`${chalk.blue(`[SERVER RESPONSE ${this.getDate()}]:`)} Response`, data)
+    console.log(`${chalk.blue(`[SERVER RESPONSE ${this.getDate()}]:`)} response`, data)
   },
   logCustomText: function(message, useDate) {
     if(useDate) console.log(`${chalk.blue(`[SERVER INFO ${this.getDate()}]:`)} ${message}`)
@@ -37,7 +37,7 @@ const loger = {
     console.error(`${chalk.redBright(`[SERVER ERROR ${this.getDate()}]:`)} Error occured in file ${this.formatPath(path)} on line ${line}`)
   },
   logValidationError: function(expressions) {
-    console.log(`${chalk.redBright(`[SERVER VALIDATION ERROR ${this.getDate()}]:`)} Validate failed!`)
+    console.log(`${chalk.redBright(`[SERVER VALIDATION ERROR ${this.getDate()}]:`)} validate failed!`)
     expressions.map(expression => console.log(`${chalk.redBright(`[SERVER VALIDATION ERROR ${this.getDate()}]:`)} ${expression}`))
   }
 }

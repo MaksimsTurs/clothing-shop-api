@@ -20,10 +20,15 @@ const admin = {
 		const { protocol, hostname, originalUrl, body, params } = req
 		loger.logRequest(protocol, hostname, originalUrl, body, params)
 
-		const { code, message } = await isAuthorizated(params.token, true)
+		try {
+			const { code, message } = await isAuthorizated(params.token, true)
 
-		loger.logResponse({ code, message })
-		return res.status(code).send({ code, message })
+			loger.logResponse({ code, message })
+			return res.status(code).send({ code, message })
+		} catch(error) {
+			loger.logError(error, import.meta.url, '35 - 45')
+			return res.status(500).send(RESPONSE_500())	
+		}
 	},
 	getStoreData: async (req, res) => {
 		const { protocol, hostname, originalUrl, body, params } = req

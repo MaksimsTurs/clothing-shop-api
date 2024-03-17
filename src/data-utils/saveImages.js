@@ -15,7 +15,6 @@ export default async function saveImages(images) {
       cloudinary.config({ cloud_name: process.env.CLOUDINARY_NAME,  api_key: process.env.CLOUDINARY_API_KEY,  api_secret: process.env.CLOUDINARY_API_SECRET, secure: true })
       return (await cloudinary.uploader.upload(images.path)).secure_url
     }
-
     return null
   } catch(error) {
     throw new Error(error)

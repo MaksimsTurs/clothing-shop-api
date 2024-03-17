@@ -18,16 +18,15 @@ import mongoose from 'mongoose'
 
 const common = {
   editUserData: async (req, res) => {
-    const { protocol, hostname, originalUrl, body, file, params } = req
+    const { protocol, hostname, originalUrl, body, file, files, params } = req
     loger.logRequest(protocol, hostname, originalUrl, body, params)
 
     const { token, firstName, secondName, email } = body
-    const newAvatar = file
+    const newAvatar = file || files[0]
 
     const { code, message, existedUser } = await isAuthorizated(token)
 
     if(code !== 200) return res.status(code).send({ code, message })
-    
     let user = {}
 
     try { 

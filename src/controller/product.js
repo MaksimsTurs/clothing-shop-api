@@ -4,38 +4,58 @@ import SectionModel from '../model/productSectionModel.js'
 import loger from '../util/loger.js'
 import { invalidateCacheKey } from '../util/cache.js'
 
-import { RESPONSE_404, RESPONSE_500 } from '../constants/error-constans.js'
+import { RESPONSE_403, RESPONSE_404, RESPONSE_500 } from '../constants/error-constans.js'
 import { MAX_CONTENT_PER_PAGE } from '../constants/num-constans.js'
 
 import findMany from '../data-utils/findMany.js'
 import findOne from '../data-utils/findOne.js'
+
+import { isValidObjectId } from 'mongoose'
 
 const product = {
   getAllProducts: async (req, res) => {
     const { protocol, hostname, originalUrl, body, params } = req
     loger.logRequest(protocol, hostname, originalUrl, body, params)
 
-    let products = [], productsSections = [], response = []
+    let products = [], sections = [], response = []
     
     try {
       products = await findMany({ model: ProductModel, cacheKey: 'products' })
-      productsSections = await findMany({ model: SectionModel, cacheKey: 'products-section' })
+      sections = await findMany({ model: SectionModel, cacheKey: 'products-section' })
+
+      if(sections.length > 0) {
+        loger.logResponse({ sections: response })
+        return res.status(200).send({ sections: response })
+      }
 
       // Push products Object in their Section. 
-      for(let index = 0; index < productsSections.length; index++) {
-        response = [...response, {...productsSections[index]._doc, products: []}] 
-        response[index].products = await ProductModel.find({ sectionID: productsSections[index]._id })
-      }
-      
-      if(productsSections.length > 0) {
-        loger.logResponse({ productsSections: response })
-        return res.status(200).send({ productsSections: response })
+      for(let index = 0; index < sections.length; index++) {
+        response = [...response, {...sections[index]._doc, products: []}] 
+        response[index].products = await ProductModel.find({ sectionID: sections[index]._id })
       }
         
-      loger.logResponse({ productsSections: [{ _id: 0, products: products }] })
-      return res.status(200).send({ productsSections: [{ _id: 0, products: products }] })
+      loger.logResponse({ sections: [{ _id: 0, products: products }] })
+      return res.status(200).send({ sections: [{ _id: 0, products: products }] })
     } catch(error) {
-      loger.logError(error, import.meta.url, '21 - 36')
+      loger.logError(error, import.meta.url, '23 - 38')
+      return res.status(500).send(RESPONSE_500())
+    }
+  },
+  getProductByTitle: async (req, res) => {
+    const { protocol, hostname, originalUrl, body, params } = req
+    loger.logRequest(protocol, hostname, originalUrl, body, params)
+
+    const { title } = params
+
+    let products = []
+
+    try {
+      products = await ProductModel.find({ title: { $regex: title } })
+
+      loger.logResponse({ products })
+      return res.status(200).send({ products })
+    } catch(error) {
+      loger.logError(error, import.meta.url, '53 - 56')
       return res.status(500).send(RESPONSE_500())
     }
   },
@@ -43,16 +63,19 @@ const product = {
     const { protocol, hostname, originalUrl, body, params } = req
     loger.logRequest(protocol, hostname, originalUrl, body, params)
 
+    const { id } = params
+
     let product = {}
 
     try {
-      product = await findOne({ model: ProductModel, cacheKey: `product-${params.id}`, condition: { _id: params.id } })
+      if(!isValidObjectId(id)) return res.status(404).send(RESPONSE_403("Product id is not Valid!"))
+      product = await findOne({ model: ProductModel, cacheKey: `product-${id}`, condition: { _id: id } })
       if(!product) return res.status(404).send(RESPONSE_404("Product not founded!"))
 
       loger.logResponse({...product._doc})
       return res.status(200).send({...product._doc})
     } catch(error) {
-      loger.logError(error, import.meta.url, '49 - 53')
+      loger.logError(error, import.meta.url, '53 - 58')
       return res.status(500).send(RESPONSE_500())
     }
   },
@@ -73,8 +96,8 @@ const product = {
     try {
       filteredProducts = await ProductModel
         .find(isCategorySelected ? { categories: { $in: category } } : {})
-        // .where('price').lte(price === 0 ? 5000 : price)
-        // .where('rating').lte(rating === 0 ? 5000 : rating)
+        .where('price').lte(price === 0 ? 5000 : price)
+        .where('rating').lte(rating === 0 ? 5000 : rating)
 
       maxPages = Math.round(filteredProducts.length / MAX_CONTENT_PER_PAGE)
       filteredProducts = filteredProducts.slice(start, end)
@@ -84,7 +107,7 @@ const product = {
       loger.logResponse({ productsRange, productsLength, currPageProducts: filteredProducts, maxPages, currPage })
       return res.status(200).send({ productsRange, productsLength, currPageProducts: filteredProducts, maxPages, currPage })
     } catch(error) {
-      loger.logError(error, import.meta.url, '74 - 85')
+      loger.logError(error, import.meta.url, '79 - 90')
       return res.status(500).send(RESPONSE_500())
     }
   },

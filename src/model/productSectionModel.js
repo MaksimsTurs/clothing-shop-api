@@ -3,10 +3,10 @@ import { model, Schema } from 'mongoose'
 export const ProductSection = new Schema(
 	{
     _id: Schema.Types.ObjectId,
-    productIDs: Array,
-    title: String,
-    precent: Number,
-    expiredDate: Date
+    productIDs: { type: Array, default: [] },
+    title: { type: String, default: null },
+    precent: { type: Number, default: 0.0 },
+    expiredDate: { type: Date, default: null }
   },
 	{ timestamps: true }
 )

@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 
 import loger from "../util/loger.js"
 import validateUserData from "../util/validateUserInput.js"
+import { pushInCache } from '../util/cache.js'
 
 import findOne from '../data-utils/findOne.js'
 import saveImages from '../data-utils/saveImages.js'
@@ -11,7 +12,6 @@ import saveImages from '../data-utils/saveImages.js'
 import { RESPONSE_400, RESPONSE_403, RESPONSE_404, RESPONSE_409, RESPONSE_500 } from '../constants/error-constans.js'
 
 import UserModel from '../model/userModel.js'
-import { pushInCache } from '../util/cache.js'
 
 const user = {
   registration: async (req, res) => {
@@ -23,7 +23,7 @@ const user = {
 
     const { isConfirmPasswordValid, isEmailValid, isFirstNameValid, isPasswordValid, isSecondNameValied } = validateUserData(body)
 
-    let salt = '', _id = undefined
+    let salt = '', _id = ''
     let existedUser = []
     let registratedUser = {}, token = {}
 
@@ -148,7 +148,7 @@ const user = {
 
     let isRemoved = false
     let user = undefined
-
+    
     try {
       user = await UserModel.findOneAndDelete({ token })
       isRemoved = user ? true : false 
