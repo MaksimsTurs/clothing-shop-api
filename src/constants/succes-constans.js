@@ -1,0 +1,1 @@
+export const RESPONSE_200 = (userMess) => ({ code: 400, message: userMess || "Succes!" })

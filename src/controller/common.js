@@ -1,7 +1,6 @@
 import loger from "../util/loger.js"
 import isAuthorizated from '../util/isAuthorizated.js'
 import isUndefinedOrNull from '../util/isUndefinedOrNull.js'
-import { invalidateCacheKey } from '../util/cache.js'
 
 import { RESPONSE_500 } from "../constants/error-constans.js"
 
@@ -10,23 +9,57 @@ import ProductModel from '../model/productModel.js'
 import SectionModel from '../model/productSectionModel.js'
 import OrderModel from '../model/order.js'
 
-import saveImages from '../data-utils/saveImages.js'
-import findMany from '../data-utils/findMany.js'
-import findOne from "../data-utils/findOne.js"
+import convertAndSave from '../util/data-utils/convertAndSave.js'
 
 import mongoose from 'mongoose'
 
 const common = {
+  getAll: async (req, res) => {
+    const { originalUrl, body, params } = req
+    loger.request(originalUrl, body, params)
+
+    let products = [], sections = [], users = []
+    let usersNumber = 0, productsNumber = 0, brandsNumber = 0
+
+    try {
+      products = await ProductModel.find()
+      users = await UserModel.find()
+      sections = await SectionModel.find({}, undefined, { populate: { path: 'productsID' } })
+    } catch(error) {
+      res.status(500).send(RESPONSE_500())
+      return loger.error(error, '/controller/common.js', 'Get data from database.')
+    }
+
+    try {
+      usersNumber  = users.length
+      productsNumber = products.length
+      brandsNumber = 0
+
+      const response = { 
+        products, 
+        sections: sections.map(section => ({...section._doc, products: section.productsID })),  
+        usersNumber,
+        productsNumber,
+        brandsNumber
+      }
+
+      res.status(200).send(response)
+      loger.response(response)
+    } catch(error) {
+      res.status(500).send(RESPONSE_500())
+      loger.error(error, '/controller/common.js', 'Pass data into response object and send to the client')
+    }
+  },
   editUserData: async (req, res) => {
-    const { protocol, hostname, originalUrl, body, file, files, params } = req
-    loger.logRequest(protocol, hostname, originalUrl, body, params)
+    const { originalUrl, body, file, files, params } = req
+    loger.request(originalUrl, body, params)
 
     const { token, firstName, secondName, email } = body
-    const newAvatar = file || files[0]
 
     const { code, message, existedUser } = await isAuthorizated(token)
 
     if(code !== 200) return res.status(code).send({ code, message })
+
     let user = {}
 
     try { 
@@ -34,65 +67,46 @@ const common = {
         firstName: firstName || existedUser.firstName,
         secondName: secondName || existedUser.secondName,
         email: email || existedUser.email,
-        avatar: isUndefinedOrNull(existedUser.avatar) ? await saveImages(newAvatar) : existedUser.avatar,
+        avatar: isUndefinedOrNull(existedUser.avatar) ? await convertAndSave(file || files, 50) : existedUser.avatar,
         token: existedUser.token
       }, { new: true })
-
-      // invalidateCacheKey('users')
-      // invalidateCacheKey(`user-${existedUser._id}`)
       
-      loger.logResponse(user)
-      return res.status(200).send(user)
+      res.status(200).send(user)
+      loger.response(user)
     } catch(error) {
-      loger.logError(error, import.meta.url, '30 - 42')
+      loger.error(error, '/controller/common.js', 'Edit user data.')
 			return res.status(500).send(RESPONSE_500())
     }
-  },
-  websiteStatistic: async (req, res) => {
-    const { protocol, hostname, originalUrl, body, params } = req
-    loger.logRequest(protocol, hostname, originalUrl, body, params)
-
-    let usersLenght = 0, productsLenght = 0, brandsLenght = 0
-
-    try {
-      usersLenght = (await findMany({ model: UserModel, cacheKey: 'users' })).length
-      productsLenght = (await findMany({ model: ProductModel, cacheKey: 'products' })).length
-
-      loger.logResponse({ usersLenght, productsLenght, brandsLenght })
-      return res.status(200).send({ usersLenght, productsLenght, brandsLenght })
-    } catch(error) {ö
-      loger.logError(error, import.meta.url, '55 - 59')
-      return res.status(500).send(RESPONSE_500())
-    }   
   },
   checkout: async (req, res) => {
     const { protocol, hostname, originalUrl, body, params } = req
     loger.logRequest(protocol, hostname, originalUrl, body, params)
 
-    const { productIDs } = body
+    const { productsInfo } = body
 
-    let products = []
+    let products = [], productIDs = productsInfo.map(product => product.id), productsRes = []
     let totalCost = 0, deliveryCost = 15, discount = 0, totalProductsCost = 0
 
     try {
-      for(let index = 0; index < productIDs.length; index++) {
-        const product = await findOne({ model: ProductModel, cacheKey: `product-${productIDs[index].id}`, condition: { _id: productIDs[index].id } })
-        const priceWithPrecent = product.price - (product.price * (product?.precent || 0))
-        
-        if(product.stock < productIDs[index].count) {       
-          totalCost += priceWithPrecent * product.stock
-          discount += (product.price * product.stock) - (priceWithPrecent * product.stock)
-          totalProductsCost += product.price * product.stock
+      products = await ProductModel.find({ _id: { $in: productIDs } })
+      
+      for(let index = 0; index < products.length; index++) {
+        const currProduct = products[index]
+        const currProductInfo = productsInfo[index]
+        const priceWithPrecent = currProduct.price - (currProduct.price * (currProduct?.precent || 0)) //Calculate price of curr product with precent
 
-          products.unshift({...product._doc, count: product.stock})
+        //When was more selected as we have
+        if(currProduct.stock < currProductInfo.count) {
+          totalCost += priceWithPrecent * currProduct.stock
+          discount += (currProduct.price * currProduct.stock) - (priceWithPrecent * currProduct.stock)
+          totalProductsCost += currProduct.precent * currProduct.stock
         } else {
-          totalCost += priceWithPrecent * productIDs[index].count
-          discount += (product.price * productIDs[index].count) - (priceWithPrecent * productIDs[index].count)
-          totalProductsCost += product.price * productIDs[index].count
+          totalCost += priceWithPrecent * productsInfo[index].count
+          discount += (currProduct.price * productsInfo[index].count) - (priceWithPrecent * productsInfo[index].count)
+          totalProductsCost += currProduct.price * productsInfo[index].count
 
-          products.unshift({...product._doc, count: productIDs[index].count})
+          productsRes.unshift({...currProduct._doc, count: productsInfo[index].count})
         }
-
       }
 
       totalCost += deliveryCost
@@ -102,8 +116,8 @@ const common = {
       deliveryCost = deliveryCost.toFixed(2)
       totalProductsCost = totalProductsCost.toFixed(2)
 
-      loger.logResponse({ products, totalCost, deliveryCost, discount, totalProductsCost })
-      return res.status(200).send({ products, totalCost, deliveryCost, discount, totalProductsCost })
+      res.status(200).send({ products: productsRes, totalCost, deliveryCost, discount, totalProductsCost })
+      loger.logResponse({ products: productsRes, totalCost, deliveryCost, discount, totalProductsCost })
     } catch(error) {
       loger.logError(error, import.meta.url, '75 - 101')
       return res.status(500).send(RESPONSE_500())
@@ -119,7 +133,7 @@ const common = {
 
     try {
       for(let index = 0; index < productIDs.length; index++) {
-        const product = await findOne({ model: ProductModel, cacheKey: `product-${productIDs[index].id}`, condition: { _id: productIDs[index].id } })
+        const product = await ProductModel.findOnde({ _id: productIDs[index].id })
 
         let newStock = product.stock - productIDs[index].count
 
@@ -134,10 +148,6 @@ const common = {
         }
 
         if(productIDs[index].sectionID) await SectionModel.updateOne({ _id: productIDs[index].sectionID }, { productID: { $pull: productIDs[index].id } })
-      
-        // invalidateCacheKey(`product-${productIDs[index].id}`)
-        // invalidateCacheKey('products-section')
-        // invalidateCacheKey('product')
       }
 
       await ProductModel.deleteMany({ _id: { $in: toDelete } })

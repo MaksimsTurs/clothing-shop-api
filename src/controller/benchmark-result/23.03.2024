@@ -1,0 +1,52 @@
+File: admin.js
+Function: getStoreData
+Fazit: 26.83 req/sec with push() function, 23.40 req/sec uses spread operator (...)
+       and 56.40 req/sec uses map() function.
+				
+With push()
+1) 46.9 req/sec (best)
+2) 25.9 req/sec
+3) 19.8 req/sec (worst)
+4) 22.7 req/sec
+5) 22.1 req/sec
+6) 25.4 req/sec
+7) 24.9 req/sec
+8) 26.4 req/sec
+9) 26.6 req/sec
+10) 27.6 req/sec
+
+With spread (...)
+1) 21.4 req/sec
+2) 21.4 req/sec
+3) 20.7 req/sec (worst)
+4) 21.7 req/sec 
+5) 22.4 req/sec
+6) 22.9 req/sec
+7) 26.5 req/sec (best)
+8) 25.4 req/sec
+9) 26.3 req/sec
+10) 25.3 req/sec
+			
+for(let index = 0; index < users.length; index++) {
+	const { __v, password, token, ...userData } = users[index]
+----------------------------------------------
+  usersUpdated = [...usersUpdated, userData]
+---------------------------------------------
+	usersUpdated.push(userData)
+---------------------------------------------
+}
+
+1) 22.1 req/sec
+2) 125.5 req/sec
+3) 235.7 req/sec (best)
+4) 22 req/sec (worst)
+6) 53.7 req/sec
+7) 26.6 req/sec
+8) 25.9 req/sec
+9) 26.5 req/sec
+10) 26 req/sec
+
+users.map(user => {
+	const { __v, password, token, ...userData } = user
+ 	return userData
+})

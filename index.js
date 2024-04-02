@@ -8,10 +8,13 @@ import user from './src/controller/user.js'
 import product from './src/controller/product.js'
 import admin from './src/controller/admin.js'
 import loger from './src/util/loger.js'
-import common from './src/controller/common.js'
 
-loger.logCustomText('Date format: year-month-date', false)
-loger.logCustomText('Time format: hour-minute-second', false)
+import commonController from './src/controller/common.js'
+import sectionController from './src/controller/section.js'
+
+console.clear()
+loger.logCustomText('Date format: year/month/date', false)
+loger.logCustomText('Time format: hour/minute/second/milli-seconds', false)
 
 const server = express() 
 
@@ -22,25 +25,29 @@ export default server
 
 await setupServer()
 
-server.post('/common/user/edit', upload.any(), common.editUserData)
-server.get('/common/get/statistic', common.websiteStatistic)
-server.post('/common/checkout', common.checkout)
-server.post('/common/buy', common.buy)
+/*---------------------------------------------------------------------*/
+server.get('/', commonController.getAll) //All for home page.
+
+server.post('/common/user/edit', upload.any(), commonController.editUserData)
+
+server.get('/section/delete', sectionController.deleteSectionByTitle)
+
+server.get('/product/:id', product.getProductByID)
+server.post('/product/filter-and-pagination', product.productPaginationFilter)
+
+server.post("/user/login", user.login)
+server.post("/user/registration", upload.any(), user.registration)
+server.get('/user/:token', user.getUserByToken)
+server.get('/user/delete/:token', user.deleteUser)
 
 server.get('/admin/check/:token', admin.controllUser)
 server.get('/admin/get/store', admin.getStoreData)
-server.post('/admin/product/add', upload.any(), admin.addProduct)
+server.get('/admin/delete-item/:id/:from', admin.deleteItem)
 server.post('/admin/product/edit', upload.any(), admin.editProduct)
+server.post('/admin/product/add', upload.any(), admin.addProduct)
 server.post('/admin/product-section/add', admin.addSection)
 server.post('/admin/product-section/edit', admin.editProductsSection)
+/*---------------------------------------------------------------------*/
 
-server.get('/user/:token', user.getUserByToken)
-server.post("/user/registration", upload.any(), user.registration)
-server.post("/user/login", user.login)
-server.get('/user/remove/:token', user.removeUser)
-
-server.get('/product/get/all', product.getAllProducts)
-server.get('/product/get/by-id/:id', product.getProductByID)
-server.get('/product/get/by-title/:title', product.getProductByTitle)
-server.get('/product/section/remove/:title', product.removeProductSection)
-server.post('/product/pagination/filter', product.productPaginationFilter)
+server.post('/common/checkout', commonController.checkout)
+server.post('/common/buy', commonController.buy)

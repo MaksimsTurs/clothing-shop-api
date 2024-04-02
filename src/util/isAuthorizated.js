@@ -7,8 +7,6 @@ import { RESPONSE_403, RESPONSE_404, RESPONSE_500 } from '../constants/error-con
 
 import UserModel from '../model/userModel.js'
 
-import findOne from '../data-utils/findOne.js'
-
 export default async function isAuthorizated(secret, checkAdmin) {
   let token = {}, existedUser = {}
 
