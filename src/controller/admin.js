@@ -160,7 +160,7 @@ const admin = {
 				rating: isUndefinedOrNull(rating) ? updatedProduct.rating : rating,
 				precent: isUndefinedOrNull(updatedProductsSection?.precent) ? null : updatedProductsSection.precent,
 				sectionID: isUndefinedOrNull(sectionData?._id) ? null : sectionData._id,
-				category: updatedProductsSection.title,
+				category: updatedProductsSection?.title || '',
 				images: (file || (files.length > 0)) ? await convertAndSave(file || files, 85) : updatedProduct.images
 			}, { new: true })
 
