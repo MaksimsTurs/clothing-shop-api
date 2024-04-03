@@ -22,7 +22,7 @@ const admin = {
 			const { code, message } = await isAuthorizated(params.token, true)
 
 			res.status(code).send({ code, message })
-			loger.response({ code, message })
+			return loger.response({ code, message })
 		} catch(error) {
 			loger.error(error, '/controll/admin.js', 'Controll, is user authorizated.')
 			return res.status(500).send(RESPONSE_500())	
@@ -50,7 +50,7 @@ const admin = {
 			response = { products, productsSection, users }
 
 			res.status(200).send(response)
-			loger.response(response)
+			return loger.response(response)
 		} catch(error) {
 			loger.error(error, '/controller/admin.js', 'Get products, sections and users data from database.')
 			return res.status(500).send(RESPONSE_500())
@@ -80,7 +80,7 @@ const admin = {
 			}
 
 			res.status(200).send({ id })
-			loger.response({ id }) 
+			return loger.response({ id }) 
 		} catch(error) {
 			loger.error(error, '/controller/admin.js', 'Delete item and return id.')
 			return res.status(500).send(RESPONSE_500())	
@@ -111,7 +111,7 @@ const admin = {
 			const response = { newProduct, updatedSection }
 
 			res.status(200).send(response)	
-			loger.response(response)
+			return loger.response(response)
 		} catch(error) {
 			loger.error(error, '/controller/admin.js', 'Create new product, update section and send data to the client.')
 			return res.status(500).send(RESPONSE_500())
@@ -130,7 +130,7 @@ const admin = {
 			await ProductModel.updateMany({ _id: { $in: productsID } }, { precent, sectionID: newSection._id, category: newSection.title })
 			
 			res.status(200).send({ newSection })
-			loger.request({ newSection })
+			return loger.request({ newSection })
 		} catch(error) {
 			loger.error(error, '/controller/admin.js', 'Create new Section model.')
 			return res.status(500).send(RESPONSE_500())
@@ -167,9 +167,8 @@ const admin = {
 			const response = { updatedProduct, updatedProductsSection }
 
 			res.status(200).send(response)
-			loger.response(response)
+			return loger.response(response)
 		} catch(error) {
-			console.log(error)
 			loger.error(error, '/controller/admin.js', 'Edit product and send to the client.')
 			return res.status(500).send(RESPONSE_500())
 		}
@@ -182,7 +181,7 @@ const admin = {
 
 		let updatedProductsSection = undefined
 		let items = [...productsID, ...currentProductsID] //New and older product ids
-
+		
 		try {
 			updatedProductsSection = await SectionModel.findById(id)
 			
@@ -195,8 +194,8 @@ const admin = {
 			//Update their Products.
 			if(items.length > 0) {
 				await ProductModel.updateMany({ _id: { $in: items } }, { 
-					precent: isUndefinedOrNull(precent) ? updatedProductsSection.precent : precent, 
-					category: isUndefinedOrNull(title) ? updatedProductsSection.title : title,
+					precent: updatedProductsSection.precent, 
+					category: updatedProductsSection.title,
 					sectionID: updatedProductsSection._id
 				})
 				for(let index = 0; index < items.length; index++) if(!updatedProductsSection.productsID.includes(items[index])) updatedProductsSection.productsID.push(items[index])
@@ -207,7 +206,7 @@ const admin = {
 			const response = { updatedProductsSection }
 
 			res.status(200).send(response)	
-			loger.response(response)
+			return loger.response(response)
 		} catch(error) {
 			loger.error(error, '/controller/admin.hs', 'Update section, products and send new data to the client.')
 			return res.status(500).send(RESPONSE_500())	

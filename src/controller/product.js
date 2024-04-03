@@ -21,7 +21,7 @@ const product = {
       if(!product) return res.status(404).send(RESPONSE_404("Product not found!"))
     
       res.status(200).send({...product._doc})
-      loger.response({...product._doc})
+      return loger.response({...product._doc})
     } catch(error) {
       loger.error(error, '/controller/product.js', 'Get single product by ID.')
       res.status(500).send(RESPONSE_500())
@@ -64,7 +64,7 @@ const product = {
       const response = { productsRange, currPageProducts: filteredProducts, maxPages, currPage, categories, maxProducts }
       
       res.status(200).send(response)
-      loger.response(response)
+      return loger.response(response)
     } catch(error) {
       loger.error(error, 'Handle filter and pagination.')
       return res.status(500).send(RESPONSE_500())

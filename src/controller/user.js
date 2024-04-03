@@ -17,8 +17,8 @@ const user = {
 
     const { firstName, secondName, password, email } = body
 
-    let salt = '', _id = ''
     let existedUser = []
+    let salt = '', _id = '', avatar = ''
     let registratedUser = {}, token = {}
 
     try {
@@ -33,16 +33,9 @@ const user = {
       salt = await bcrypt.genSalt()
       _id = new mongoose.Types.ObjectId()
       token = jwt.sign({ _id }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '1min' })
+      avatar = convertAndSave(file || files, 50)
 
-      registratedUser = await UserModel.create({ 
-        _id,
-        firstName, 
-        secondName, 
-        email, 
-        token,
-        password: await bcrypt.hash(password, salt),
-        avatar: await convertAndSave(file || files, 50)
-      })
+      registratedUser = await UserModel.create({ _id, firstName, secondName, email, token, password: await bcrypt.hash(password, salt), avatar: avatar[0] })
 
       const response = { avatar: registratedUser.avatar, _id: registratedUser._id, firstName, secondName, token }
 

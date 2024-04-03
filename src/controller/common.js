@@ -44,7 +44,7 @@ const common = {
       }
 
       res.status(200).send(response)
-      loger.response(response)
+      return loger.response(response)
     } catch(error) {
       res.status(500).send(RESPONSE_500())
       loger.error(error, '/controller/common.js', 'Pass data into response object and send to the client')
@@ -75,7 +75,7 @@ const common = {
       const response = { firstName: user.firstName, secondName: user.secondName, avatar: user.avatar, token: user.token }
 
       res.status(200).send(response)
-      loger.response(response)
+      return loger.response(response)
     } catch(error) {
       loger.error(error, '/controller/common.js', 'Edit user data.')
 			return res.status(500).send(RESPONSE_500())
@@ -120,7 +120,7 @@ const common = {
       totalProductsCost = totalProductsCost.toFixed(2)
 
       res.status(200).send({ products: productsRes, totalCost, deliveryCost, discount, totalProductsCost })
-      loger.logResponse({ products: productsRes, totalCost, deliveryCost, discount, totalProductsCost })
+      return loger.logResponse({ products: productsRes, totalCost, deliveryCost, discount, totalProductsCost })
     } catch(error) {
       loger.logError(error, import.meta.url, '75 - 101')
       return res.status(500).send(RESPONSE_500())

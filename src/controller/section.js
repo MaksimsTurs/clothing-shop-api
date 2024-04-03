@@ -20,7 +20,7 @@ export default {
       await ProductModel.updateMany({ _id: { $in: section.productsID } }, { precent: null, sectionID: null })
 
       res.status(200).send(RESPONSE_200())
-      loger.response(RESPONSE_200())
+      return loger.response(RESPONSE_200())
     } catch(error) {
       loger.error(error, '/controller/section.js', 'Delete section when their timer is ended.')
       res.status(500).send(RESPONSE_500())
