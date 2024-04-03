@@ -71,7 +71,7 @@ const admin = {
 				case 'product':
 					product = await ProductModel.findByIdAndDelete(id)
 					if(product && product.images.length > 0) await removeImages(product.images)
-					if(product.sectionID) section = await SectionModel.updateOne({ _id: product.sectionID }, { $pull: { _id: product._id } })
+					if(product.sectionID) section = await SectionModel.updateOne({ _id: product.sectionID }, { $pull: { productsID: String(product._id) } })
 				break;
 				case 'product-section':
 					section = await SectionModel.findByIdAndDelete(id)
@@ -93,7 +93,7 @@ const admin = {
 		const { title, price, stock, description, selectedSection, rating } = body
 		const sectionData = isUndefinedOrNull(selectedSection) ? undefined : JSON.parse(selectedSection) // { _id: string, title: string }
 
-		let newProduct = {}, updatedSection = {}
+		let newProduct = undefined, updatedSection = undefined
 
 		try {
 			newProduct = new ProductModel({ _id: new mongoose.Types.ObjectId(), images: await convertAndSave(file || files, 85), title, description, price, stock, rating })
@@ -160,6 +160,7 @@ const admin = {
 				rating: isUndefinedOrNull(rating) ? updatedProduct.rating : rating,
 				precent: isUndefinedOrNull(updatedProductsSection?.precent) ? null : updatedProductsSection.precent,
 				sectionID: isUndefinedOrNull(sectionData?._id) ? null : sectionData._id,
+				category: updatedProductsSection.title,
 				images: (file || (files.length > 0)) ? await convertAndSave(file || files, 85) : updatedProduct.images
 			}, { new: true })
 
