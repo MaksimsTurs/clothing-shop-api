@@ -20,7 +20,7 @@ const common = {
 
     let products = [], sections = [], users = []
     let usersNumber = 0, productsNumber = 0, brandsNumber = 0
-
+    
     try {
       products = await ProductModel.find()
       users = await UserModel.find()
@@ -61,18 +61,21 @@ const common = {
     if(code !== 200) return res.status(code).send({ code, message })
 
     let user = {}
+    let avatar = ''
 
     try { 
+      avatar = await convertAndSave(file || files, 50),
       user = await UserModel.findByIdAndUpdate(existedUser._id, {
         firstName: firstName || existedUser.firstName,
         secondName: secondName || existedUser.secondName,
         email: email || existedUser.email,
-        avatar: isUndefinedOrNull(existedUser.avatar) ? await convertAndSave(file || files, 50) : existedUser.avatar,
-        token: existedUser.token
+        avatar: avatar[0]
       }, { new: true })
-      
-      res.status(200).send(user)
-      loger.response(user)
+
+      const response = { firstName: user.firstName, secondName: user.secondName, avatar: user.avatar, token: user.token }
+
+      res.status(200).send(response)
+      loger.response(response)
     } catch(error) {
       loger.error(error, '/controller/common.js', 'Edit user data.')
 			return res.status(500).send(RESPONSE_500())

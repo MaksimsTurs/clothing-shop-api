@@ -14,17 +14,17 @@ const product = {
     loger.request(originalUrl, body, params)
 
     let product = {}
-
+    
     try {
-      if(!isValidObjectId(params.id)) return res.status(404).send(RESPONSE_403("Product id is not Valid!"))
+      if(!isValidObjectId(params.id)) return res.status(404).send(RESPONSE_403("Data is not valid!"))
       product = await ProductModel.findById(params.id)
-      if(!product) return res.status(404).send(RESPONSE_404("Product not founded!"))
-
+      if(!product) return res.status(404).send(RESPONSE_404("Product not found!"))
+    
       res.status(200).send({...product._doc})
       loger.response({...product._doc})
     } catch(error) {
-      res.status(500).send(RESPONSE_500())
       loger.error(error, '/controller/product.js', 'Get single product by ID.')
+      res.status(500).send(RESPONSE_500())
     }
   },
   productPaginationFilter: async (req, res) => {
