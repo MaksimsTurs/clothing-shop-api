@@ -127,10 +127,10 @@ const admin = {
 		
 		try {
 			newSection = await SectionModel.create({ _id: new mongoose.Types.ObjectId(), title, precent, productsID, expiredDate })
-			await ProductModel.updateMany({ _id: { $in: productsID } }, { precent, sectionID: newSection._id, category: newSection.title })
+			if(productsID.length > 0) await ProductModel.updateMany({ _id: { $in: productsID } }, { precent, sectionID: newSection._id, category: newSection.title })
 			
 			res.status(200).send({ newSection })
-			return loger.request({ newSection })
+			return loger.response({ newSection })
 		} catch(error) {
 			loger.error(error, '/controller/admin.js', 'Create new Section model.')
 			return res.status(500).send(RESPONSE_500())

@@ -23,7 +23,7 @@ const loger = {
     return `${path.replaceAll("file:///", "").replaceAll("%20", " ")}`
   },
   request(path, body, params) {
-    console.log(`${chalk.greenBright(`[SERVER REQUEST ${this.getDate()}]:`)} request on ${path}`)
+    console.log(`${chalk.greenBright(`[SERVER REQUEST ${this.getDate()}]:`)} request on ${JSON.stringify(path)}`)
 
     if(Object.keys(body).length > 0) console.log(`${chalk.greenBright(`[SERVER REQUEST ${this.getDate()}]:`)} request body`, body)
     if(Object.keys(params).length > 0) console.log(`${chalk.greenBright(`[SERVER REQUEST ${this.getDate()}]:`)} request params`, params)

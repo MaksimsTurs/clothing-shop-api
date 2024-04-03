@@ -112,7 +112,6 @@ const user = {
     const { originalUrl, body, params } = req
     loger.request(originalUrl, body, params)
 
-
     if(!params.token) return res.status(403).send(RESPONSE_403())
 
     let isRemoved = false
