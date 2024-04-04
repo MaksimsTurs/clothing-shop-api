@@ -31,32 +31,24 @@ const product = {
     const { originalUrl, body, params } = req
     loger.request(originalUrl, body, params)
 
-    const { category, price, rating, page, title } = body
+    const { category, price, rating, page } = body
 
-    const isCategorySelected = category.length > 0 ? true : false
+    const isCategorySelected = category.length > 0
     const start = Number(page) * MAX_CONTENT_PER_PAGE
     const end = Number(start) + MAX_CONTENT_PER_PAGE
     
-    let filteredProducts = [], categories = [], productsID = []
+    let filteredProducts = [], categories = []
     let maxPages = 0, currPage = Number(page), maxProducts = 0
     let productsRange = { max: 0, min: 0 }
     
     try {
-      if(title) {
-        productsID = (await SectionModel.findOne({ title })).productsID
-        filteredProducts = await ProductModel
-          .find({ _id: { $in: productsID }, categories: isCategorySelected ? { $in: category } : undefined })
-          .where('price').lte(price === 0 ? 5000 : price)
-          .where('rating').lte(rating === 0 ? 5000 : rating)        
-      } else {
-        filteredProducts = await ProductModel
-          .find(isCategorySelected ? { category: { $in: category } } : {})
-          .where('price').lte(price === 0 ? 5000 : price)
-          .where('rating').lte(rating === 0 ? 5000 : rating)
-      }
-      
-      maxPages = Math.round(filteredProducts.length / MAX_CONTENT_PER_PAGE)
+      filteredProducts = await ProductModel
+        .find(isCategorySelected ? { category: { $in: category } } : undefined)
+        .where('price').lte(price === 0 ? 5000 : price)
+        .where('rating').lte(rating === 0 ? 5000 : rating)
+
       filteredProducts = filteredProducts.slice(start, end)
+      maxPages = Math.ceil(filteredProducts.length / MAX_CONTENT_PER_PAGE)
       maxProducts = (await ProductModel.find()).length  
       categories = (await SectionModel.find()).map(section => section.title)
       productsRange = { max: end > maxProducts ? maxProducts : end, min: start }
