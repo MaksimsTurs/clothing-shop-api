@@ -40,13 +40,9 @@ const product = {
     let filteredProducts = [], categories = []
     let maxPages = 0, currPage = Number(page), maxProducts = 0
     let productsRange = { max: 0, min: 0 }
-    
+      
     try {
-      filteredProducts = await ProductModel.find({ 
-        category: isCategorySelected ? { category: { $in: category } } : undefined, 
-        price: { $lte: (price <= 0 ? 2000 : price) },
-        rating: { $lte: (rating <= 0 ? 5 : rating) }
-      })
+      filteredProducts = await ProductModel.find({ $or: [{ category: { $in: category } }, {price: { $lte: (price <= 0 ? 2000 : price) }}, {rating: { $lte: (rating <= 0 ? 5 : rating) }}] })
 
       filteredProducts = filteredProducts.slice(start, end)
       maxPages = Math.ceil(filteredProducts.length / MAX_CONTENT_PER_PAGE)
