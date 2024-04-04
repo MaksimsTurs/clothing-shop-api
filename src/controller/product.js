@@ -44,8 +44,8 @@ const product = {
     try {
       filteredProducts = await ProductModel
         .find(isCategorySelected ? { category: { $in: category } } : undefined)
-        .where('price').lte(price === 0 ? 5000 : price)
-        .where('rating').lte(rating === 0 ? 5000 : rating)
+        // .where('price').lte(price === 0 ? 5000 : price)
+        // .where('rating').lte(rating === 0 ? 5000 : rating)
 
       filteredProducts = filteredProducts.slice(start, end)
       maxPages = Math.ceil(filteredProducts.length / MAX_CONTENT_PER_PAGE)
