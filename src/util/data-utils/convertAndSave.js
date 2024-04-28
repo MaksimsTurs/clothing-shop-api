@@ -2,9 +2,9 @@ import sharp from 'sharp'
 import { v2 as cloudinary } from 'cloudinary'
 import streamifier from 'streamifier'
 
-export default function convertAndSave(imgs, quality) {
-  if(Array.isArray(imgs)) return saveMultiple(imgs, quality)
-  return saveSingle(imgs, quality)
+export default async function convertAndSave(imgs, quality) {
+  if(Array.isArray(imgs)) return await saveMultiple(imgs, quality)
+  return await saveSingle(imgs, quality)
 }
 
 async function saveSingle(img, quality) {
