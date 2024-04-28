@@ -43,3 +43,5 @@ server.post('/admin/order/change-status',       Admin.changeOrderStatus)
 server.post('/admin/product/edit',              upload.any(), Admin.editProduct)
 server.post('/admin/product/add',               upload.any(), Admin.addProduct)
 server.post('/admin/user/edit',                 upload.any(), Admin.editUserAdmin)
+
+export default server
