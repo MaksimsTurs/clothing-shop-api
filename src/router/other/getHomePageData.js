@@ -6,6 +6,7 @@ import { readFile } from "fs/promises"
 import ProductModel from '../../model/productModel.js'
 import SectionModel from '../../model/productSectionModel.js'
 import UserModel from '../../model/userModel.js'
+import path from "path"
 
 export default async function getHomePageData() {
   const timer = new Loger.create.Timer()
@@ -25,7 +26,7 @@ export default async function getHomePageData() {
   try {
     Loger.text('Cache MISS, get data from database')
     timer.start('READ_SETTING')
-    settings = JSON.parse(await readFile(`${process.cwd()}/settings.json`, { encoding: 'utf-8' }))
+    settings = JSON.parse(await readFile(path.join(process.cwd(), 'settings.json'), { encoding: 'utf-8' }))
     timer.stop('Complete reading website settings', 'READ_SETTING')    
 
     if(!settings.isAllProductsHidden) {

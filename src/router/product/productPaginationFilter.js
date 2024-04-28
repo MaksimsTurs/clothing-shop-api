@@ -3,13 +3,18 @@ import Loger from "../../util/loger/loger.js"
 import ProductModel from '../../model/productModel.js'
 import SectionModel from '../../model/productSectionModel.js'
 
+import { readFile } from "fs/promises"
+import path from "path"
+
 export default async function productPaginationFilter(req, res) {
   const timer = new Loger.create.Timer()
   const { category, price, rating, page } = req.body
 
+  const MAX_CONTENT_PER_PAGE = await readFile(path.join(process.cwd(), 'settings.json'))
+
   const isCategorySelected = category.length > 0
-  const start = Number(page) * 15
-  const end = Number(start) + 15
+  const start = Number(page) * MAX_CONTENT_PER_PAGE
+  const end = Number(start) + MAX_CONTENT_PER_PAGE
   
   let filteredProducts = [], categories = []
   let maxPages = 0, currPage = Number(page), maxProducts = 0
@@ -33,7 +38,7 @@ export default async function productPaginationFilter(req, res) {
     filteredProducts = filteredProducts.slice(start, end)
 
     Loger.text('Calculate pages count')
-    maxPages = Math.ceil(filteredProducts.length / 15)
+    maxPages = Math.ceil(filteredProducts.length / MAX_CONTENT_PER_PAGE)
     
     timer.start('GETTING_PRODUCTS_COUNT')
     maxProducts = filteredProducts.length

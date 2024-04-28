@@ -8,6 +8,7 @@ import ProductModel from '../../model/productModel.js'
 import SectionModel from '../../model/productSectionModel.js'
 import UserModel from '../../model/userModel.js'
 import OrderModel from '../../model/orderModel.js'
+import path from "path"
 
 export default async function getStoreData() {
   const timer = new Loger.create.Timer()
@@ -26,7 +27,7 @@ export default async function getStoreData() {
 
     Loger.text('Cache MISS, get data from database')
     timer.start('READ_SETTING')
-    websiteSettings = JSON.parse(await readFile(`${process.cwd()}/settings.json`, { encoding: 'utf8' }))
+    websiteSettings = JSON.parse(await readFile(path.join(process.cwd(), 'settings.json'), { encoding: 'utf8' }))
     timer.stop('Complete getting website settings', 'READ_SETTING')
 
     timer.start('GETTING_PRODUCTS')
