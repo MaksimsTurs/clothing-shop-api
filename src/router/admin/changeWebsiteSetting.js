@@ -6,12 +6,12 @@ import { writeFile } from "fs/promises"
 import path from "path"
 
 export default async function changeWebsiteSetting(req) {
-  const timer = new Loger.create.Timer()
-
   try {
-    timer.start('READ_SETTING')
+    const timer = new Loger.create.Timer()
+
+    timer.start('Update website settings')
     await writeFile(path.join(process.cwd(), 'settings.json'), JSON.stringify(req.body), { encoding: 'utf-8' })
-    timer.stop('Updating website settings', 'READ_SETTING')
+    timer.stop('Updating website settings')
 
     cache.restore()
 

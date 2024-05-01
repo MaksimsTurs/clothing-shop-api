@@ -2,30 +2,39 @@ import { isValidObjectId } from "mongoose"
 
 import Loger from "../../util/loger/loger.js"
 
-export default async function getProductById() {
-  const timer = new Loger.create.Timer()
-  const productProjection = { __v: false, createdAt: false, updatedAt: false }
+import ProductModel from "../../model/productModel.js"
 
-  let product = cache.get(cache.keys.PRODUCT_ID + params.id)
-  
+import { cache } from '../../../index.js'
+
+import { RESPONSE_404 } from "../../constants/error-constans.js"
+
+export default async function getProductById(req) {  
   try {
-    Loger.text('Check id validity')
-    if(!isValidObjectId(params.id)) return RESPONSE_404("Product not found!")
+    const timer = new Loger.create.Timer()
+    const productProjection = { __v: false, createdAt: false, updatedAt: false, sectionID: false }
+  
+    let product = cache.get(cache.keys.PRODUCT_ID + req.params.id)
+
+    Loger.log('Check id validity')
+    if(!isValidObjectId(req.params.id)) return RESPONSE_404("Product not found!")
 
     if(product) {
-      timer.stop('Cache HIT, send to client...', 'EXECUTION_TIME')
+      Loger.log('Cache HIT, send to client')
       return product
     }
 
-    Loger.text('Cache MISS, get data from database')
-    timer.start('GETTING_PRODUCT')   
-    product = await ProductModel.findOne({ _id: params.id, stock: { $gte: 0 } }, productProjection)
-    timer.stop('Complete getting product', 'GETTING_PRODUCT')
+    Loger.log('Cache MISS, get data from database')
+    timer.start(`Get product by id "${req.params.id}"`)   
+    product = await ProductModel.findOne({ _id: req.params.id, stock: { $gte: 1 } }, productProjection)
+    timer.stop(`Complete getting product by id "${req.params.id}"`)
 
-    if(!product) return RESPONSE_404("Product not found!")
+    if(!product) {
+      Loger.log(`Product by id "${req.params.id}" not found`)
+      return RESPONSE_404("Product not found!")
+    }
 
-    Loger.text('Updating cache')
-    cache.set(cache.keys.PRODUCT_ID + params.id, {...product._doc })
+    Loger.log('Updating cache')
+    cache.set(cache.keys.PRODUCT_ID + req.params.id, {...product._doc })
     
     return product._doc
   } catch(error) {

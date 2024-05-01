@@ -1,32 +1,37 @@
 import Loger from "../../util/loger/loger.js"
+import isUndefinedOrNull from "../../util/isUndefinedOrNull.js"
 
 import { RESPONSE_200 } from "../../constants/succes-constans.js"
 import { RESPONSE_400, RESPONSE_403 } from "../../constants/error-constans.js"
 
 import jwt from 'jsonwebtoken'
+import mongoose from "mongoose"
 
-export default async function closeTransaction(req, res) {
-  const timer = new Loger.create.Timer()
-  const { checkID, adress, token } = body
+import ProductModel from '../../model/productModel.js'
+import OrderModel from '../../model/orderModel.js'
+import SectionModel from '../../model/productSectionModel.js'
 
-  const { products } = cache.get(checkID)
+import { cache } from "../../../index.js"
 
-  let product, section, tokenData
-  let orderProducts = []
-
+export default async function closeTransaction(req, res) {  
   try {
-    Loger.text('Check is adress was added')
-    if(isUndefinedOrNull(adress)) {
-      res.status(400).send(RESPONSE_400("Adress cann not be empty!"))
-      return Loger.response(RESPONSE_400("Adress cann not be empty!"))  
-    }
+    const timer = new Loger.create.Timer()
+    const { checkID, adress, token } = req.body
+  
+    const { products } = cache.get(checkID)
+  
+    let product, section, tokenData
+    let orderProducts = []
 
-    Loger.text('Verifying token')
-    tokenData = jwt.verify(token)
+    Loger.log('Check is adress not empty')
+    if(isUndefinedOrNull(adress)) return RESPONSE_400("Adress cann not be empty!")
+
+    Loger.log('Verifying token')
+    tokenData = jwt.verify(token, process.env.CREATE_TOKEN_SECRET)
 
     if(!tokenData) return RESPONSE_403("You need authorizate!")
 
-    timer.start('UPDATE_PRODUCTS_STOKE')
+    timer.start('Update products stock and push products in order')
     for(let index = 0; index < products.length; index++) {
       product = await ProductModel.findById(products[index]._id)
       
@@ -55,11 +60,11 @@ export default async function closeTransaction(req, res) {
 
       await product.save()
     }    
-    timer.stop('Complete finding, updating products stock and pushing order', 'UPDATE_PRODUCTS_STOKE')
+    timer.stop('Complete updating products stock and pushing in order')
 
-    timer.start('CREATE_ORDER')
-    await OrderModel.create({ _id: new mongoose.Types.ObjectId(), toBuy: orderProducts, adress, userID: tokenData._id })
-    timer.stop('Complete creating order', 'CREATE_ORDER')
+    timer.start('Create order')
+    await OrderModel.create({ _id: new mongoose.Types.ObjectId(), toBuy: orderProducts, adress, userID: tokenData.id })
+    timer.stop('Complete creating order')
 
     return RESPONSE_200("Complete closing transaction!")
   } catch(error) {

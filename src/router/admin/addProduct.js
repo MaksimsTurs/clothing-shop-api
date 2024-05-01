@@ -1,43 +1,50 @@
 import Loger from "../../util/loger/loger.js"
+import isUndefinedOrNull from '../../util/isUndefinedOrNull.js'
 
 import convertAndSave from "../../util/data-utils/convertAndSave.js"
+
+import mongoose from "mongoose"
+
+import { cache } from '../../../index.js'
 
 import ProductModel from '../../model/productModel.js'
 import SectionModel from '../../model/productSectionModel.js'
 
-export default async function addProduct(req) {
-  const timer = new Loger.create.Timer()
-  const { body, files } = req
-
-  const { title, price, stock, description, category, rating } = body
-
-  let newProduct, updatedSection, response
-  let imgs = []
-
+export default async function addProduct(req) {  
   try {
-    timer.start('CONVERT_AND_SAVE_IMG')
-    if(files.length > 0) imgs = await convertAndSave(files, 70)
-    timer.stop('Complete converting and saving imgs', 'CONVERT_AND_SAVE_IMG')
+    const timer = new Loger.create.Timer()
+    const { body, files } = req
+  
+    const { title, price, stock, description, category, rating } = body
+  
+    let newProduct, updatedSection, response
+    let imgs = []
 
-    timer.start('CREATE_PRODUCT')
+    timer.start('Conver and save product imgs')
+    if(files.length > 0) imgs = await convertAndSave(files, 70)
+    timer.stop('Complete converting and saving product imgs')
+
+    timer.start('Create product')
     newProduct = new ProductModel({ _id: new mongoose.Types.ObjectId(), images: imgs, title, description, price, stock, rating })
-    timer.stop('Complete creating product', 'CREATE_PRODUCT')
+    timer.stop('Complete creating product')
 
     // Will be called when ADMIN have selected the section, push new Product ID in existed section.
     if(!isUndefinedOrNull(category)) {
-      timer.start('UPDATING_PRODUCTS_AND_SECTION')
+      timer.start('Update products and sections')
       updatedSection = await SectionModel.findOneAndUpdate({ title: category }, { $push: { productsID: newProduct._id } }, { new: true })
       newProduct.sectionID = updatedSection._id
       newProduct.precent = updatedSection.precent
       newProduct.category = updatedSection.title
-      timer.stop('Complete updating products and sections', 'UPDATING_PRODUCTS_AND_SECTION')
+      timer.stop('Complete updating products and sections')
     }		
     
+    timer.start('Save product and update cache')
     await newProduct.save()
-
     cache.remove(cache.keys.ADMIN_STORE_DATA)
     cache.set(cache.keys.PRODUCT_ID + newProduct._id)
+    timer.stop('Complete saving product and update cache')
 
+    Loger.log('Assign data to response')
     response = { newProduct, updatedSection }
 
     return response

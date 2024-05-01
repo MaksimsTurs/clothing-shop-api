@@ -8,22 +8,22 @@ import OrderModel from '../../model/orderModel.js'
 import { cache } from "../../../index.js"
 
 export default async function getUserById(req) {
-  const timer = new Loger.create.Timer()
-  let response = cache.get(cache.keys.USER_ID + req.params.id), existedUser
-  let order = []
-
-  const commonProjection = { __v: false, createdAt: false, updatedAt: false }
-
   try {
+    const timer = new Loger.create.Timer()
+    const commonProjection = { __v: false, createdAt: false, updatedAt: false }
+
+    let response = cache.get(cache.keys.USER_ID + req.params.id), existedUser
+    let order = []  
+
     if(existedUser) {
-      Loger.text('Cache HIT, send response to client')
+      Loger.log('Cache HIT, send response to client')
       return response
     }
 
-    Loger.text('Cache MISS, get data from database')
-    timer.start('GETTING_USER')
+    Loger.log('Cache MISS, get data from database')
+    timer.start(`Get user by id "${req.params.id}"`)
     existedUser = await UserModel.findOne({ _id: req.params.id }, commonProjection)
-    timer.stop('Complete getting user', 'GETTING_USER')
+    timer.stop(`Complete getting user by id "${req.params.id}"`)
 
     if(!existedUser) return RESPONSE_404("User not found!")
 
@@ -39,7 +39,6 @@ export default async function getUserById(req) {
       order
     }
 
-    Loger.text('Caching response')
     cache.set(cache.keys.USER_ID + req.params.id, response)
 
     return response

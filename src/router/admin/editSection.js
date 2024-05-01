@@ -5,18 +5,18 @@ import ProductModel from '../../model/productModel.js'
 
 import { cache } from '../../../index.js'
 
-export default async function editSection(req) {
-  const timer = new Loger.create.Timer()
-  const { title, isHidden, position, precent, expiredDate, id, productsID } = req.body
-
-  const sectionProjection = { __v: false }
-
-  let productsSection
-  
+export default async function editSection(req) {  
   try {
-    timer.start('GETTING_PRODUCT')
+    const timer = new Loger.create.Timer()
+    const { title, isHidden, position, precent, expiredDate, id, productsID } = req.body
+  
+    const sectionProjection = { __v: false }
+  
+    let productsSection
+
+    timer.start(`Get section by id ${id}`)
     productsSection = await SectionModel.findById(id, sectionProjection)
-    timer.stop('Complete getting and updating product section', 'GETTING_PRODUCT')
+    timer.stop('Complete getting and updating section section')
 
     productsSection.title = title
     productsSection.precent = precent
@@ -24,17 +24,17 @@ export default async function editSection(req) {
     productsSection.isHidden = isHidden
     productsSection.expiredDate = expiredDate
     
-    timer.start('UPDATING_PRODUCT_IN_SECTION')
+    timer.start('Update products where is in section')
     if(productsID.length > 0) {
       for(let index = 0; index < productsID.length; index++) {
         await ProductModel.findOneAndUpdate({ $and: [{ _id: productsID[index] }, { stock: { $gte: 1 } }] }, { precent: productsSection.precent, category: productsSection.title, sectionID: productsSection._id }) 
         if(!productsSection.productsID.includes(productsID[index])) productsSection.productsID.push(productsID[index])
       }
     }
-    timer.stop('Complete updating products in section', 'UPDATING_PRODUCT_IN_SECTION')
+    timer.stop('Complete updating section in section')
 
+    Loger.log('Update section and cache')
     await productsSection.save()
-
     cache.remove(cache.keys.ADMIN_STORE_DATA)
     cache.remove(cache.keys.HOME_DATA)
 

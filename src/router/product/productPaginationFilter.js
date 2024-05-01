@@ -6,23 +6,24 @@ import SectionModel from '../../model/productSectionModel.js'
 import { readFile } from "fs/promises"
 import path from "path"
 
-export default async function productPaginationFilter(req, res) {
-  const timer = new Loger.create.Timer()
-  const { category, price, rating, page } = req.body
-
-  const MAX_CONTENT_PER_PAGE = await readFile(path.join(process.cwd(), 'settings.json'))
-
-  const isCategorySelected = category.length > 0
-  const start = Number(page) * MAX_CONTENT_PER_PAGE
-  const end = Number(start) + MAX_CONTENT_PER_PAGE
-  
-  let filteredProducts = [], categories = []
-  let maxPages = 0, currPage = Number(page), maxProducts = 0
-  let productsRange = { max: 0, min: 0 }, response
-    
+export default async function productPaginationFilter(req, res) {  
   try {
+    const timer = new Loger.create.Timer()
+    const { category, price, rating, page } = req.body
+  
+    timer.start(`Get maxProductsPerPage from ${path.join(process.cwd(), 'settings.json')}`)
+    const MAX_CONTENT_PER_PAGE = parseInt(JSON.parse((await readFile(path.join(process.cwd(), 'settings.json'), { encoding: 'utf-8' })))['maxProductsPerPage'])
+    timer.stop('Getting maxProductsPerPage completed')
 
-    timer.start('FILTERING_PRODUCTS')
+    const isCategorySelected = category.length > 0
+    const start = Number(page) * MAX_CONTENT_PER_PAGE
+    const end = Number(start) + MAX_CONTENT_PER_PAGE
+    
+    let filteredProducts = [], categories = []
+    let maxPages = 0, currPage = Number(page), maxProducts = 0
+    let productsRange = { max: 0, min: 0 }
+
+    timer.start('Filtering products')
     if(isCategorySelected) {
       filteredProducts = await ProductModel.find({ 
         $and: [{ $and: [{ stock: { $gte: 1 }}] }, { $or: [{ price: { $lte: (price === 0) ? 10000 : price }, rating: { $lte: (rating === 0) ? 5 : rating }, category: { $in: category }}] }]
@@ -32,27 +33,26 @@ export default async function productPaginationFilter(req, res) {
         $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: (price === 0) ? 10000 : price }, rating: { $lte: (rating === 0) ? 5 : rating }}] }]
       })
     }
-    timer.stop('Complete filtering products', 'FILTERING_PRODUCTS')
+    timer.stop('Complete filtering products')
 
-    Loger.text('Slicing products array')
+    Loger.log('Slicing products array')
     filteredProducts = filteredProducts.slice(start, end)
 
-    Loger.text('Calculate pages count')
+    Loger.log('Calculate pages count')
     maxPages = Math.ceil(filteredProducts.length / MAX_CONTENT_PER_PAGE)
     
-    timer.start('GETTING_PRODUCTS_COUNT')
+    Loger.log('Get filtered products count')
     maxProducts = filteredProducts.length
-    timer.stop('Complete getting products count', 'GETTING_PRODUCTS_COUNT')
     
-    timer.start('GETTING_SECTION_TITLE')
-    categories = (await SectionModel.find()).map(section => section.title)
-    timer.stop('Complete getting sections title', 'GETTING_SECTION_TITLE')
+    timer.start('Getting sections titles')
+    categories = (await SectionModel.find({}, { title: true, _id: false })).map(category => category.title)
+    timer.stop('Complete getting sections title')
 
-    productsRange = { max: end, min: start }
-    
-    response = { productsRange, currPageProducts: filteredProducts, maxPages, currPage, categories, maxProducts }
-    
-    return response
+
+    Loger.log('Assign max and min values')
+    productsRange = { max: end, min: filteredProducts.length }
+        
+    return { productsRange, currPageProducts: filteredProducts, maxPages, currPage, categories, maxProducts }
   } catch(error) {
     throw new Error(error.message)
   }

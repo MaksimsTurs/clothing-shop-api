@@ -4,42 +4,42 @@ import isUndefinedOrNull from "../../util/isUndefinedOrNull.js"
 import ProductModel from '../../model/productModel.js'
 import SectionModel from '../../model/productSectionModel.js'
 
+import convertAndSave from "../../util/data-utils/convertAndSave.js"
+
 import { cache } from "../../../index.js"
 
 export default async function editProduct(req) {
-  const timer = new Loger.create.Timer()
-  const { files } = req
-
-  let { category, _id, precent, title, price, rating, description, stock } = req.body 
-
-  let updatedProduct, updatedCategory, response
-  let imgs = []
-
-  const commonProjection = { __v: false }
-
   try {
-    timer.start('CONVERT_AND_SAVE')
-    if(files.length > 0) imgs = await convertAndSave(files, 70)
-    timer.stop('Complete converting img', 'CONVERT_AND_SAVE')
+    const timer = new Loger.create.Timer()
+    const { files } = req
+    const commonProjection = { __v: false }
+  
+    let { category, _id, precent, title, price, rating, description, stock } = req.body 
+  
+    let updatedProduct, updatedCategory, response
+    let imgs = []
 
-    timer.start('GETTING_PRODUCT')
+    timer.start('Convert and save product imgs')
+    if(files.length > 0) imgs = await convertAndSave(files, 70)
+    timer.stop('Complete converting and saving product img')
+
+    timer.start(`Get products by id ${_id}`)
     updatedProduct = await ProductModel.findById({ _id })
-    timer.stop('Complete updating product', 'GETTING_PRODUCT')
+    timer.stop(`Complete getting product by id ${_id}`)
 
     //When section was selected, push the new ID and update product.
     if(!isUndefinedOrNull(category) && updatedProduct.stock > 0) {
       updatedCategory = await SectionModel.findOne({ title: category }, commonProjection)
       //Push product id when not include.
       if(!updatedCategory.productsID.includes(_id)) {
-        timer.start('PUSH_ID_INTO_SECTION')
+        timer.start('Push into section new product id')
         updatedCategory.productsID = [...updatedCategory.productsID, _id]
         await updatedCategory.save()
-        timer.stop('Complete push id into category and save', 'PUSH_ID_INTO_SECTION')
+        timer.stop('Complete push id into category and save')
       }
     }
 
-    Loger.text('Updating product and return new Document...')
-    timer.start('UPDATING_PRODUCT')
+    timer.start('Updating product and return new Document')
     updatedProduct = await ProductModel.findByIdAndUpdate(_id, {
       title,
       price,
@@ -51,12 +51,14 @@ export default async function editProduct(req) {
       category: !isUndefinedOrNull(updatedProduct?.category) ? updatedProduct.category : updatedCategory.title || null,
       images: imgs.length > 0 ? imgs[0] : updatedProduct.images,
     }, { new: true, projection: commonProjection })
-    timer.stop('Complete updating product', 'UPDATING_PRODUCT')
+    timer.stop('Complete updating product')
 
+    Loger.log('Remove some cache')
     cache.remove(cache.keys.ADMIN_STORE_DATA)
     cache.remove(cache.keys.HOME_DATA)
     cache.set(cache.keys.PRODUCT_ID + _id, updatedProduct._doc)
 
+    Loger.log('Assign data to response')
     response = { updatedProduct, updatedCategory }
 
     return response

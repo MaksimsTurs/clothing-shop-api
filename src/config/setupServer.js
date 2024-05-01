@@ -43,23 +43,27 @@ config()
 
 export default async function setupServer(server) {
   try {
-    Loger.text('Date format: [year][month][day]')
-    Loger.text('Time format: [hour][minute][second][milli seconds]')
+    const timer = new Loger.create.Timer()
     
-    Loger.text('Proxifying route callbacks')
+    timer.start('Start proxyfying route functions')
     const User = proxifier([registration, login, getUserById, editUser, deleteUser])
     const Product = proxifier([getProductById, productPaginationFilter, getProductByTitle])
     const Other = proxifier([getHomePageData, removeExpiredSection, checkout, createOrder, closeTransaction])
     const Admin = proxifier([editProduct, editSection, editUserAdmin, addProduct, addSection, changeOrderStatus, changeWebsiteSetting, controllUser, deleteItem, getStoreData])
+    timer.start('Proxyfying completed')
     
-    Loger.text('Creating memory storage for uplodaer')
+    timer.start('Creating memory storage for uploader')
     const storage = memoryStorage({ filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`) })
+    timer.stop('Uploader was successfuly created')
 
-    Loger.text('Creating cache storage')
+    timer.start('Creating cache storage')
     const cache = new CreateCache({ cacheKeys: CACHE_KEYS })
-    
+    timer.stop('Cache was successfuly created')
+
+    timer.start('Start listening server and connecting to database')
     server.listen(DEV_PORT, DEV_HOST)  
     await connectDB()
+    timer.stop('Successfuly connected to mongo')
 
     return { cache, upload: multer({ storage }), User, Product, Other, Admin }
   } catch(error) {

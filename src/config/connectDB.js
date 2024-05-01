@@ -10,7 +10,6 @@ export default async function connectDB() {
   const DBURL = `${process.env.MONGO_DB_URI}${currDB}?retryWrites=true&w=majority`
   
   try {
-    Loger.text('Connecting to MongoDB')
     await connect(DBURL)
   } catch(error) {
     throw Loger.error(error, import.meta.url)

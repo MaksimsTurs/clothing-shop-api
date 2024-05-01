@@ -1,48 +1,104 @@
 /**
  * blueBright()   for INFO/REQUEST/RESPONSE
  * redBright()    for ERROR/VALIDATION ERROR
- * yellowBright() for WARN
+ * yellowBright() for NUMBER
  */
-
-import recursiveHiddeArray from "./recursiveHiddeArray.js";
-import recursiveHiddeProperty from './recursiveHiddeProperty.js'
-import formater from "./formaters.js";
-import createLabel from "./createLabel.js";
 
 import chalk from "chalk";
 
 const Loger = {
-  create: {
-    Timer: function() {
-      this.times = {}
-      this.start = function(key) {
-        this.times[key] = Date.now()
-      }
-      this.stop = function(text, key) {
-        this.times[key] = (Date.now() - this.times[key]) / 1000
-        console.log(`${createLabel('INFO')} ${chalk.greenBright(`[${chalk.yellowBright(`${chalk.yellowBright(`${this.times[key]}s`)}`)}]`)} ${text}`)
-      }
-    }
+  create: { Timer },
+  request: function(url, body, params) {
+    body = Object.keys(body || {}).length === 0 ? '[UNDEFINED]' : body
+    params = Object.keys(params || {}).length === 0 ? '[UNDEFINED]' : params
+    console.info(getLabel('REQUEST'), { url, body, params })
   },
-  request: function(URL, _body, _params) {
-    const body = Object.keys(_body || {}).length > 0 ? _body : 'Request body is not defined.'
-    const params = Object.keys(_params || {}).length > 0 ? _params : 'Request params is not defined.' 
-    console.info(createLabel('REQUEST'), { URL, body, params })
+  response: function(response, toRedicate) {
+    const res = JSON.parse(JSON.stringify(response))
+    hiddeArray(res)
+    hiddeProp(res, toRedicate)
+    console.info(getLabel('RESPONSE'), res)
   },
-  response: function(data, redicateKeys = undefined) {
-    let response = JSON.parse(JSON.stringify(data))
+  error: function(error, fileName) {
+    console.error(getLabel('ERROR'), { message: error.message, file: fileName })
+  },
+  log: function(text) {
+    console.log(`${getLabel('INFO')} ${colorizer(`0ms ${text}`)}`)
+  },
+}
 
-    recursiveHiddeArray(response)
-    recursiveHiddeProperty(response, redicateKeys)
+function Timer() {
+  this.index = -1
+  this.timers = []
 
-    console.info(createLabel('RESPONSE'), response)
-  },
-  error: function(message, file, target) {
-    console.error(createLabel('ERROR'), { occuredIn: formater.path(file), message, target })
-  },
-  text: function(message, data) {
-    console.log(`${createLabel('INFO')} ${message}`, data ?? '')
-  },
+  this.start = function(text = '') {
+    this.timers.push(Date.now())
+    this.index++
+    
+    console.log(`${getLabel('INFO')} ${colorizer(`0ms ${text}`)}`)
+  }
+
+  this.stop = function(text) {
+    const deleteIndex = (this.index >= 1) ? this.timers.length - 1 : 0
+    const time = (Date.now() - this.timers[deleteIndex])
+
+    // this.timers = this.timers.filter((_, index) => deleteIndex !== index)
+    this.timers.pop()
+    this.index--
+
+    console.log(`${getLabel('INFO')} ${colorizer(`${time}ms ${text}`)}`)
+  }
+}
+
+function colorizer(text) {
+  let textSplited = text.split(' '), logText = ''
+  for(let index = 0; index < textSplited.length; index++) {
+    if(/[""]/.test(textSplited[index])) logText += chalk.greenBright(`${textSplited[index]} `)
+    else if(!Number.isNaN(parseFloat(textSplited[index]))) logText += `${chalk.yellowBright(textSplited[index])} `
+    else logText += `${textSplited[index]} `
+  }
+  return logText
+}
+
+function hiddeProp(response, toRedicate) {
+  if(toRedicate) for(let index = 0; index < toRedicate.length; index++) response[toRedicate[index]] = '[Hidden]'
+}
+
+function hiddeArray(response) {
+  for(let [key, value] of Object.entries(response)) {
+    if(Array.isArray(value) && value.length > 0) response[key] = '[Array]'
+    else if(typeof value === 'object' && value) hiddeArray(value)
+  }
+}
+
+function getLabel(level = 'INFO') {
+  switch(level) {
+    case 'INFO':
+    case 'REQUEST':
+    case 'RESPONSE':
+      return chalk.blueBright(`[SERVER ${level} ${getDate()}]:`)
+    case 'ERROR':
+      return chalk.redBright(`[SERVER ${level} ${getDate()}]`)
+  }
+}
+
+function formatNum(num) {
+  if(num < 10) return `00${num}`
+  else if(num < 100) return `0${num}`
+  return num
+}
+
+function getDate() {
+  const currDate = new Date()
+
+  const month        = formatNum(currDate.getMonth() + 1)
+  const date         = formatNum(currDate.getDate())
+  const hours        = formatNum(currDate.getHours())
+  const minutes      = formatNum(currDate.getMinutes())
+  const second       = formatNum(currDate.getSeconds())
+  const milliSeconds = formatNum(currDate.getMilliseconds())
+
+  return `${month}-${date} ${hours}:${minutes}:${second}:${milliSeconds}`  
 }
 
 export default Loger

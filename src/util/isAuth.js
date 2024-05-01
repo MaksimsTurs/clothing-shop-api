@@ -13,17 +13,17 @@ const USER_NOT_FOUND = "User not found!"
 const USER_HAVE_NO_PERMISSION = "You have no permission!"
 
 export default async function isAuth(secret, isAdmin) {
-  let token, existedUser
-
   try {
-    Loger.text('Check is token not null, undefined or empty string...')
+    let token, existedUser
+    
+    Loger.log('Check is token defined')
     if(isNullOrUndefined(secret)) return RESPONSE_403(USER_ARE_NOT_AUTHORIZATED)
 
-    Loger.text('Decoding token...')
+    Loger.log('Verifying token')
     token = jwt.verify(secret, process.env.CREATE_TOKEN_SECRET)
     if(!token) return RESPONSE_403(USER_ARE_NOT_AUTHORIZATED)
 
-    Loger.text('Getting user by id...')
+    Loger.log('Find user by id')
     existedUser = await UserModel.findById(token.id)
 
     if(!existedUser) return RESPONSE_404(USER_NOT_FOUND)
@@ -32,7 +32,7 @@ export default async function isAuth(secret, isAdmin) {
 
     return RESPONSE_200("Successfuly authorizated!")
   } catch(error) {
-    Loger.error(error.message, import.meta.url)
+    Loger.error(error, import.meta.url)
     return RESPONSE_500()
   }
 }

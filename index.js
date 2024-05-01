@@ -13,9 +13,9 @@ const timer = new Loger.create.Timer()
 server.use(cors())
 server.use(express.json())
 
-timer.start('SETUP_SERVER')
+timer.start('Starting configuring server')
 export const { cache, upload, User, Product, Other, Admin } = await setupServer(server)
-timer.stop('Complete configuring server', 'SETUP_SERVER')
+timer.stop('Server configuration completed')
 
 server.get('/',                                 Other.getHomePageData)
 server.get('/remove-section/:title',            Other.removeExpiredSection)
