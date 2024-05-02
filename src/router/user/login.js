@@ -34,11 +34,13 @@ export default async function login(req) {
       const { _id, token, avatar, firstName, secondName } = await UserModel.findByIdAndUpdate(existedUser._id, { token: jwt.sign({ id: existedUser._id, role: existedUser.role }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '2d' }) }, { new: true })
       timer.stop('Complete updating user token')
 
+      Loger.log('Assign data to response')
       response = { id: _id, name: `${firstName} ${secondName}`, token, avatar }
 
       return response
     }
 
+    Loger.log('User not exist')
     return RESPONSE_404("User not exist!")
   } catch(error) {
     throw new Error(error.message)

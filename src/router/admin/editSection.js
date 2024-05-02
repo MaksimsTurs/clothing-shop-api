@@ -22,7 +22,7 @@ export default async function editSection(req) {
     productsSection.precent = precent
     productsSection.position = position
     productsSection.isHidden = isHidden
-    productsSection.expiredDate = expiredDate
+    productsSection.expiredDate = expiredDate || productsSection.expiredDate
     
     timer.start('Update products where is in section')
     if(productsID.length > 0) {

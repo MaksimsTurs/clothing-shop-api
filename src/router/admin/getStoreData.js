@@ -26,9 +26,8 @@ export default async function getStoreData() {
     }
 
     Loger.log('Cache MISS, get data from database')
-    timer.start('Read website settins')
-    websiteSettings = JSON.parse(await readFile(path.join(process.cwd(), 'settings.json'), { encoding: 'utf8' }))
-    timer.stop('Complete getting website settings')
+    Loger.log('Get website settings')
+    websiteSettings = globalThis.settings
 
     timer.start('Get all products')
     products = await ProductModel.find({}, commonProjection)

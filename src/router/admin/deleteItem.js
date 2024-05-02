@@ -54,6 +54,8 @@ export default async function deleteItem(req) {
           Loger.log(`Removed cache ${item.productsID[index]}`)
           cache.remove(cache.keys.PRODUCT_ID + item.productsID[index])
         }
+        cache.remove(cache.keys.ADMIN_STORE_DATA)
+        cache.remove(cache.keys.HOME_DATA)
         timer.stop('Complete removing cache')
       break;
       case 'order':

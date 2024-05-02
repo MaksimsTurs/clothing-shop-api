@@ -43,6 +43,9 @@ config()
 
 export default async function setupServer(server) {
   try {
+    Loger.log('Pushing settings in global object')
+    globalThis.settings = { maxProductsPerPage: 10, deliveryFee: 5, isAllProductsHidden: true }
+
     const timer = new Loger.create.Timer()
     
     timer.start('Start proxyfying route functions')

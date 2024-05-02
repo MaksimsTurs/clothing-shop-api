@@ -1,5 +1,7 @@
 import Loger from "../../util/loger/loger.js"
 
+import ProductModel from '../../model/productModel.js'
+
 export default async function getProductByTitle(req) {
   try {
     const timer = new Loger.create.Timer()

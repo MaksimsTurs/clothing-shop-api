@@ -9,12 +9,9 @@ import path from "path"
 export default async function productPaginationFilter(req, res) {  
   try {
     const timer = new Loger.create.Timer()
+    const MAX_CONTENT_PER_PAGE = globalThis.settings.maxProductsPerPage
     const { category, price, rating, page } = req.body
   
-    timer.start(`Get maxProductsPerPage from ${path.join(process.cwd(), 'settings.json')}`)
-    const MAX_CONTENT_PER_PAGE = parseInt(JSON.parse((await readFile(path.join(process.cwd(), 'settings.json'), { encoding: 'utf-8' })))['maxProductsPerPage'])
-    timer.stop('Getting maxProductsPerPage completed')
-
     const isCategorySelected = category.length > 0
     const start = Number(page) * MAX_CONTENT_PER_PAGE
     const end = Number(start) + MAX_CONTENT_PER_PAGE

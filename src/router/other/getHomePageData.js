@@ -1,8 +1,5 @@
 import Loger from "../../util/loger/loger.js"
 
-import { readFile } from "fs/promises"
-import path from "path"
-
 import ProductModel from '../../model/productModel.js'
 import SectionModel from '../../model/productSectionModel.js'
 import UserModel from '../../model/userModel.js'
@@ -27,9 +24,8 @@ export default async function getHomePageData() {
     }
 
     Loger.log('Cache MISS, get data from database')
-    timer.start(`Get website settings from ${path.join(process.cwd(), 'settings.json')}`)
-    settings = JSON.parse(await readFile(path.join(process.cwd(), 'settings.json'), { encoding: 'utf-8' }))
-    timer.stop('Complete getting website settings')    
+    Loger.log(`Get website settings`)
+    settings = globalThis.settings
 
     if(!settings.isAllProductsHidden) {
       timer.start('Get products from database')

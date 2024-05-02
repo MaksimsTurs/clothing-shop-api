@@ -12,6 +12,6 @@ export default async function connectDB() {
   try {
     await connect(DBURL)
   } catch(error) {
-    throw Loger.error(error, import.meta.url)
+    return Loger.error(error, import.meta.url)
   }
 }

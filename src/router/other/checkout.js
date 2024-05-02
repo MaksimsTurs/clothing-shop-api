@@ -21,9 +21,8 @@ export default async function checkout(req) {
       const checkID = crypto.randomUUID()
       const productsID = req.body.map(product => product._id)
 
-      timer.start('Get delivery fee price')
-      response.delivery = JSON.parse(await readFile(path.join(process.cwd(), 'settings.json'), { encoding: 'utf-8' }))['deliveryFee']
-      timer.stop('Complete getting delivery fee')
+      Loger.log('Get delivery fee price')
+      response.delivery = globalThis.settings.deliveryFee
 
       timer.start('Get products by id')
       response.products = await ProductModel.find({ _id: { $in: productsID } }, productProjection)

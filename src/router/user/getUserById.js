@@ -25,12 +25,14 @@ export default async function getUserById(req) {
     existedUser = await UserModel.findOne({ _id: req.params.id }, commonProjection)
     timer.stop(`Complete getting user by id "${req.params.id}"`)
 
+    Loger.log('User not found')
     if(!existedUser) return RESPONSE_404("User not found!")
 
     timer.start('GETTING_USER_ORDER')
     order = await OrderModel.find({ userID: existedUser._id }, commonProjection)
     timer.stop('Complete getting user orders', 'GETTING_USER_ORDER')
 
+    Loger.log('Assign data to response')
     response = { 
       role: existedUser.role, 
       name: `${existedUser.firstName} ${existedUser.secondName}`,
@@ -39,6 +41,7 @@ export default async function getUserById(req) {
       order
     }
 
+    Loger.log('Update cache')
     cache.set(cache.keys.USER_ID + req.params.id, response)
 
     return response
