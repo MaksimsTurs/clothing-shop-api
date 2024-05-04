@@ -28,8 +28,8 @@ export default async function getUserById(req) {
     Loger.log('User not found')
     if(!existedUser) return RESPONSE_404("User not found!")
 
-    timer.start('GETTING_USER_ORDER')
-    order = await OrderModel.find({ userID: existedUser._id }, commonProjection)
+    timer.start('Get user orders')
+    order = await OrderModel.find({ $and: [{ firstName: existedUser.firstName, secondName: existedUser.secondName }] }, commonProjection)
     timer.stop('Complete getting user orders', 'GETTING_USER_ORDER')
 
     Loger.log('Assign data to response')

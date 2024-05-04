@@ -2,15 +2,13 @@ import Loger from "../../util/loger/loger.js"
 
 import ProductModel from '../../model/productModel.js'
 import SectionModel from '../../model/productSectionModel.js'
+import WebsiteSettingsModel from '../../model/websiteSetting.js'
 
-import { readFile } from "fs/promises"
-import path from "path"
-
-export default async function productPaginationFilter(req, res) {  
+export default async function productPaginationFilter(req) {  
   try {
     const timer = new Loger.create.Timer()
-    const MAX_CONTENT_PER_PAGE = globalThis.settings.maxProductsPerPage
-    const { category, price, rating, page } = req.body
+    let { category, price, rating, page } = req.body
+    const MAX_CONTENT_PER_PAGE = (await WebsiteSettingsModel.find())[0].maxProductsPerPage
   
     const isCategorySelected = category.length > 0
     const start = Number(page) * MAX_CONTENT_PER_PAGE
@@ -20,19 +18,15 @@ export default async function productPaginationFilter(req, res) {
     let maxPages = 0, currPage = Number(page), maxProducts = 0
     let productsRange = { max: 0, min: 0 }
 
+    price = price === 0 ? 100000 : price
+    rating = rating === 0 ? 100000 : rating
+
     timer.start('Filtering products')
-    if(isCategorySelected) {
-      filteredProducts = await ProductModel.find({ 
-        $and: [{ $and: [{ stock: { $gte: 1 }}] }, { $or: [{ price: { $lte: (price === 0) ? 10000 : price }, rating: { $lte: (rating === 0) ? 5 : rating }, category: { $in: category }}] }]
-      })
-    } else {
-      filteredProducts = await ProductModel.find({ 
-        $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: (price === 0) ? 10000 : price }, rating: { $lte: (rating === 0) ? 5 : rating }}] }]
-      })
-    }
+    if(isCategorySelected) filteredProducts = await ProductModel.find({ $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: price }, rating: { $lte: rating }, category: { $in: category }}] }] })
+    else filteredProducts = await ProductModel.find({ $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: price }, rating: { $lte: rating }}] }] })
     timer.stop('Complete filtering products')
 
-    Loger.log('Slicing products array')
+    Loger.log('Slicing products for page')
     filteredProducts = filteredProducts.slice(start, end)
 
     Loger.log('Calculate pages count')

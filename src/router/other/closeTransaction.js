@@ -1,35 +1,41 @@
 import Loger from "../../util/loger/loger.js"
-import isUndefinedOrNull from "../../util/isUndefinedOrNull.js"
 
 import { RESPONSE_200 } from "../../constants/succes-constans.js"
-import { RESPONSE_400, RESPONSE_403 } from "../../constants/error-constans.js"
+import { RESPONSE_403, RESPONSE_404 } from "../../constants/error-constans.js"
 
-import jwt from 'jsonwebtoken'
-import mongoose from "mongoose"
+import mongoose, { isValidObjectId } from "mongoose"
+import { validationResult } from "express-validator"
 
 import ProductModel from '../../model/productModel.js'
 import OrderModel from '../../model/orderModel.js'
 import SectionModel from '../../model/productSectionModel.js'
+import UserModel from '../../model/userModel.js'
 
 import { cache } from "../../../index.js"
 
-export default async function closeTransaction(req, res) {  
+export default async function closeTransaction(req) {  
   try {
     const timer = new Loger.create.Timer()
-    const { checkID, adress, token } = req.body
-  
+    const { checkID, adress, city, plz, id, firstName, secondName, email } = req.body
+
+    timer.start('Starting validating user input')
+    const valRes = validationResult(req.body)
+    timer.stop('Complete validating user input')
+
+    if(!valRes.isEmpty()) return valRes.array({ onlyFirstError: true })
+
     const { products } = cache.get(checkID)
   
-    let product, section, tokenData
+    let product, section, user
     let orderProducts = []
 
-    Loger.log('Check is adress not empty')
-    if(isUndefinedOrNull(adress)) return RESPONSE_400("Adress cann not be empty!")
+    if(isValidObjectId(id) && (!firstName && !secondName && !email)) {
+      timer.start(`Finding user by id ${id}`)
+      user = await UserModel.findById(id)
+      timer.stop(`Complete finding user by id ${id}`) 
+      if(!user) return RESPONSE_404('User not found, you cann make order as Gast!')
+    } else if((!firstName || !secondName || !email) && !id) return RESPONSE_403('Pass data into inputs fileds!')
 
-    Loger.log('Verifying token')
-    tokenData = jwt.verify(token, process.env.CREATE_TOKEN_SECRET)
-
-    if(!tokenData) return RESPONSE_403("You need authorizate!")
 
     timer.start('Update products stock and push products in order')
     for(let index = 0; index < products.length; index++) {
@@ -63,7 +69,16 @@ export default async function closeTransaction(req, res) {
     timer.stop('Complete updating products stock and pushing in order')
 
     timer.start('Create order')
-    await OrderModel.create({ _id: new mongoose.Types.ObjectId(), toBuy: orderProducts, adress, userID: tokenData.id })
+    await OrderModel.create({ 
+      _id: new mongoose.Types.ObjectId(), 
+      toBuy: orderProducts, 
+      firstName: firstName || user.firstName,
+      secondName: secondName || user.secondName,
+      email: email || user.email,
+      adress,
+      city,
+      plz
+    })
     timer.stop('Complete creating order')
 
     return RESPONSE_200("Complete closing transaction!")

@@ -1,13 +1,11 @@
 import Loger from "../../util/loger/loger.js"
 
-import { readFile } from "fs/promises"
-
 import ProductModel from '../../model/productModel.js'
+import WebsiteSettingsModel from '../../model/websiteSetting.js'
 
 import { cache } from "../../../index.js"
 
 import crypto from 'crypto'
-import path from "path"
 
 export default async function checkout(req) {
     try {
@@ -15,14 +13,11 @@ export default async function checkout(req) {
 
       if(!req.body) return response
   
-      let response = { products: [], totalItemsPrice: 0, totalPriceWithDiscount: 0, totalOrderPrice: 0, delivery: 15, discount: 0, warnings: [] }
+      let response = { products: [], totalItemsPrice: 0, totalPriceWithDiscount: 0, totalOrderPrice: 0, delivery: 0, discount: 0, warnings: [] }
   
       const productProjection = { __v: false, createdAt: false, updatedAt: false, description: false, sectionID: false, category: false }
       const checkID = crypto.randomUUID()
       const productsID = req.body.map(product => product._id)
-
-      Loger.log('Get delivery fee price')
-      response.delivery = globalThis.settings.deliveryFee
 
       timer.start('Get products by id')
       response.products = await ProductModel.find({ _id: { $in: productsID } }, productProjection)
@@ -47,13 +42,19 @@ export default async function checkout(req) {
       }
       timer.stop('Complete calculate products price, discount and order price')
       
+      
       Loger.log('Assign discount, total order price and delivery')
       response.discount = +(response.totalItemsPrice - response.totalPriceWithDiscount).toFixed(2)
-      response.totalOrderPrice = +(response.totalPriceWithDiscount + +response.delivery).toFixed(2)
       response.totalItemsPrice = +(response.totalItemsPrice).toFixed(2)
       response.totalPriceWithDiscount = +(response.totalPriceWithDiscount).toFixed(2)
-      response.delivery = parseInt(response.delivery)
-
+      
+      if(response.totalPriceWithDiscount < 100) {
+        timer.start('Get delivery fee price from settings')
+        response.delivery = parseFloat((await WebsiteSettingsModel.find())[0].deliveryFee)
+        timer.stop('Complete getting delivery fee price from settings')
+      } else response.delivery = 0
+      response.totalOrderPrice = +(response.totalPriceWithDiscount + +response.delivery).toFixed(2)
+      
       Loger.log('Cache order')
       cache.set(checkID, { totalOrderPrice: response.totalOrderPrice, products: response.products.map(product => ({ _id: product._id, count: product._doc.count })) })
 

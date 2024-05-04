@@ -9,6 +9,7 @@ import paypalSDK from '@paypal/checkout-server-sdk'
 export default async function createOrder(req) {
   try {
     const timer = new Loger.create.Timer()
+    console.log(cache._storage)
     const { checkID } = req.params
     const { totalOrderPrice } = cache.get(checkID)
   

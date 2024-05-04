@@ -4,6 +4,7 @@ import ProductModel from '../../model/productModel.js'
 import SectionModel from '../../model/productSectionModel.js'
 import UserModel from '../../model/userModel.js'
 import OrderModel from '../../model/orderModel.js'
+import WebsiteSettingsModel from '../../model/websiteSetting.js'
 
 import { cache } from "../../../index.js"
 
@@ -24,8 +25,9 @@ export default async function getHomePageData() {
     }
 
     Loger.log('Cache MISS, get data from database')
-    Loger.log(`Get website settings`)
-    settings = globalThis.settings
+    timer.start(`Get website settings`)
+    settings = (await WebsiteSettingsModel.find())[0]
+    timer.stop('Complete getting website settings')
 
     if(!settings.isAllProductsHidden) {
       timer.start('Get products from database')
@@ -34,7 +36,7 @@ export default async function getHomePageData() {
     }
     
     timer.start('Get sections from database')
-    sections = await SectionModel.find({ isHidden: false }, commonProjection, { populate: { path: 'productsID' } })
+    sections = await SectionModel.find({ isHidden: false }, commonProjection, { populate: { path: 'productsID', match: { stock: { $gte: 1 } } } })
     timer.stop('Complete getting sections')
     
     timer.start('Get orders count')

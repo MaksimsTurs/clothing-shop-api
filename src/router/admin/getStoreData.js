@@ -2,13 +2,11 @@ import Loger from "../../util/loger/loger.js"
 
 import { cache } from "../../../index.js"
 
-import { readFile } from "fs/promises"
-import path from "path"
-
 import ProductModel from '../../model/productModel.js'
 import SectionModel from '../../model/productSectionModel.js'
 import UserModel from '../../model/userModel.js'
 import OrderModel from '../../model/orderModel.js'
+import WebsiteSettingsModel from '../../model/websiteSetting.js'
 
 export default async function getStoreData() {
   try {
@@ -27,7 +25,7 @@ export default async function getStoreData() {
 
     Loger.log('Cache MISS, get data from database')
     Loger.log('Get website settings')
-    websiteSettings = globalThis.settings
+    websiteSettings = (await WebsiteSettingsModel.find())[0]
 
     timer.start('Get all products')
     products = await ProductModel.find({}, commonProjection)

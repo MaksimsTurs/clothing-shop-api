@@ -3,7 +3,7 @@ import cors from 'cors'
 
 import setupServer from './src/config/setupServer.js'
 
-import { loginValidator, registrationValidator } from './src/validation/userInput.js'
+import { loginValidator, registrationValidator, createOrderValidator } from './src/validation/userInput.js'
 
 import Loger from './src/util/loger/loger.js'
 
@@ -21,7 +21,7 @@ server.get('/',                                 Other.getHomePageData)
 server.get('/remove-section/:title',            Other.removeExpiredSection)
 server.post('/check-cart',                      Other.checkout)
 server.get('/create-order/:checkID',            Other.createOrder)
-server.post('/close-transaction',               Other.closeTransaction)
+server.post('/close-transaction',               createOrderValidator, Other.closeTransaction)
 /*----------------------------------------------------------------------------------------------------*/
 server.get('/user/:id',                         User.getUserById)
 server.get('/user/remove/:id',                  User.deleteUser)

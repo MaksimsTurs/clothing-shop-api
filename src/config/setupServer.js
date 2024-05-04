@@ -10,6 +10,8 @@ import { CACHE_KEYS, DEV_HOST } from '../constants/string-constans.js'
 
 import proxifier from "../router/routerProxifier.js"
 
+import WebsiteSettingModel from '../model/websiteSetting.js'
+
 import registration from "../router/user/registration.js"
 import login from "../router/user/login.js"
 import getUserById from "../router/user/getUserById.js"
@@ -43,30 +45,36 @@ config()
 
 export default async function setupServer(server) {
   try {
-    Loger.log('Pushing settings in global object')
-    globalThis.settings = { maxProductsPerPage: 10, deliveryFee: 5, isAllProductsHidden: true }
-
     const timer = new Loger.create.Timer()
-    
-    timer.start('Start proxyfying route functions')
-    const User = proxifier([registration, login, getUserById, editUser, deleteUser])
-    const Product = proxifier([getProductById, productPaginationFilter, getProductByTitle])
-    const Other = proxifier([getHomePageData, removeExpiredSection, checkout, createOrder, closeTransaction])
-    const Admin = proxifier([editProduct, editSection, editUserAdmin, addProduct, addSection, changeOrderStatus, changeWebsiteSetting, controllUser, deleteItem, getStoreData])
-    timer.start('Proxyfying completed')
-    
-    timer.start('Creating memory storage for uploader')
-    const storage = memoryStorage({ filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`) })
-    timer.stop('Uploader was successfuly created')
 
-    timer.start('Creating cache storage')
-    const cache = new CreateCache({ cacheKeys: CACHE_KEYS })
-    timer.stop('Cache was successfuly created')
+    Loger.log(`Server starting in mode "${process.env.NODE_ENV.trim()}"`)
 
     timer.start('Start listening server and connecting to database')
     server.listen(DEV_PORT, DEV_HOST)  
     await connectDB()
     timer.stop('Successfuly connected to mongo')
+
+    Loger.log('Get website settings')
+    const settings = (await WebsiteSettingModel.find())[0]
+
+    if(!settings) {
+      Loger.log('No settings was founded')
+      timer.start('Creating and saving website settings')
+      await WebsiteSettingModel.create({ defaultDeliveryFee: 5, isAllProductsHidden: false, key: 'websitesettings', maxProductsPerPage: 12 })
+      timer.stop('Complete creating and saving website settings')
+    } 
+
+    Loger.log('Proxyfying route functions')
+    const User = proxifier([registration, login, getUserById, editUser, deleteUser])
+    const Product = proxifier([getProductById, productPaginationFilter, getProductByTitle])
+    const Other = proxifier([getHomePageData, removeExpiredSection, checkout, createOrder, closeTransaction])
+    const Admin = proxifier([editProduct, editSection, editUserAdmin, addProduct, addSection, changeOrderStatus, changeWebsiteSetting, controllUser, deleteItem, getStoreData])
+    
+    Loger.log('Creating memory storage for uploader')
+    const storage = memoryStorage({ filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`) })
+
+    Loger.log('Creating cache storage')
+    const cache = new CreateCache({ cacheKeys: CACHE_KEYS })
 
     return { cache, upload: multer({ storage }), User, Product, Other, Admin }
   } catch(error) {

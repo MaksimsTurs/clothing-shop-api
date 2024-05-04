@@ -5,7 +5,7 @@ function configureEnviroment() {
   const clientID = mode === 'dev' ? process.env.PAYPAL_CLIENT_SANDBOX : process.env.PAYPAL_CLIENT_LIVE
   const clientSecret = mode === 'dev' ? process.env.PAYPAL_SECRET_SANDBOX : process.env.PAYPAL_SECRET_LIVE
 
-  return process.env.NODE_ENV.trim() === 'dev' ? new paypalSDK.core.SandboxEnvironment(clientID, clientSecret) : new paypalSDK.core.LiveEnvironment(clientID, clientSecret) 
+  return mode === 'dev' ? new paypalSDK.core.SandboxEnvironment(clientID, clientSecret) : new paypalSDK.core.LiveEnvironment(clientID, clientSecret) 
 }
 
 export default function createPaypalClient() {
