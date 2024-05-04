@@ -21,13 +21,9 @@ export default async function productPaginationFilter(req) {
     price = price === 0 ? 1000 : price
     rating = rating === 0 ? 1000 : rating
 
-    //stock 1
-    //rating 0 (100)
-    //price 0 (100)
-
     timer.start('Filtering products')
     if(isCategorySelected) filteredProducts = await ProductModel.find({ $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: price }, rating: { $lte: rating }, category: { $in: category }}] }] })
-    else filteredProducts = await ProductModel.find({ $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: price }, rating: { $lte: rating }}] }] })
+    else filteredProducts = await ProductModel.find({ $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: price } }, { rating: { $lte: rating } }] }] })
     timer.stop('Complete filtering products')
 
     Loger.log(`Slicing products for page, start = ${start} | end = ${end}`)
