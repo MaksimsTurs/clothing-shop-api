@@ -32,7 +32,7 @@ export default async function checkout(req) {
 
         if(newCount <= 0) {
           currProduct._doc.count = response.products[index].stock
-          if(!response.warnings.includes('COUNT_BIGGER_THEN_STOCK')) response.warnings.push('COUNT_BIGGER_THEN_STOCK')
+          if(!response.warnings.includes('COUNT_BIGGER_THEN_STOCK') && newCount < 0) response.warnings.push('COUNT_BIGGER_THEN_STOCK')
         } else currProduct._doc.count = req.body[index].count
 
         response.totalPriceWithDiscount += +((currProduct.price - (currProduct.price * currProduct.precent || 0)) * currProduct._doc.count)

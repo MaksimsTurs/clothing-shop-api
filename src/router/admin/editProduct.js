@@ -47,8 +47,8 @@ export default async function editProduct(req) {
       stock,
       description, 
       precent: isUndefinedOrNull(precent) ? updatedCategory?.precent : precent,
-      sectionID: !isUndefinedOrNull(updatedProduct?.sectionID) ? updatedProduct.sectionID : updatedCategory._id || null,
-      category: !isUndefinedOrNull(updatedProduct?.category) ? updatedProduct.category : updatedCategory.title || null,
+      sectionID: !isUndefinedOrNull(updatedProduct?.sectionID) ? updatedProduct.sectionID : updatedCategory?._id || null,
+      category: !isUndefinedOrNull(updatedProduct?.category) ? updatedProduct.category : updatedCategory?.title || null,
       images: imgs.length > 0 ? imgs[0] : updatedProduct.images,
     }, { new: true, projection: commonProjection })
     timer.stop('Complete updating product')
