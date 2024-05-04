@@ -1,6 +1,6 @@
 import Loger from "../util/loger/loger.js"
 
-import { RESPONSE_500 } from '../constants/error-constans.js'
+import { RESPONSE_500, RESPONSE_504 } from '../constants/error-constans.js'
 
 const routesHandler = {
   apply: async function(target, _, argArray) {
@@ -12,9 +12,9 @@ const routesHandler = {
       Loger.request(req.originalUrl, req.body, req.params)
   
       timer.start('Start executing route function')
-      const targetResponse = await target(...argArray)
+      const targetResponse = await Promise.race([target(...argArray), maxEcutionTime(8000)])
       timer.stop('Route function completely executed')
-      
+
       if(('code' in targetResponse) && ('message' in targetResponse)) {
         const { code, message } = targetResponse
         res.status(code).send({ code, message })
@@ -30,6 +30,10 @@ const routesHandler = {
       Loger.error(error, import.meta.url)
     }
   }
+}
+
+async function maxEcutionTime(ms) {
+  return new Promise((resolve) => setTimeout(() => resolve(RESPONSE_504()), ms))
 }
 
 export default function proxifier(callbacks) {
