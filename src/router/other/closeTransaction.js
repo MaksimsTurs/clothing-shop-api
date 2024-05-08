@@ -1,4 +1,5 @@
 import Loger from "../../util/loger/loger.js"
+import paypal from "../../util/paypal.js"
 
 import { RESPONSE_200 } from "../../constants/succes-constans.js"
 import { RESPONSE_403, RESPONSE_404 } from "../../constants/error-constans.js"
@@ -16,11 +17,11 @@ import { cache } from "../../../index.js"
 export default async function closeTransaction(req) {  
   try {
     const timer = new Loger.create.Timer()
-    const { checkID, adress, city, plz, id, firstName, secondName, email } = req.body
+    const { checkID, orderID, adress, city, plz, id, firstName, secondName, email } = req.body
 
     timer.start('Starting validating user input')
     const valRes = validationResult(req.body)
-    timer.stop('Complete validating user input')
+    timer.stop('Complete')
 
     if(!valRes.isEmpty()) return valRes.array({ onlyFirstError: true })
 
@@ -30,12 +31,20 @@ export default async function closeTransaction(req) {
     let orderProducts = []
 
     if(isValidObjectId(id) && (!firstName && !secondName && !email)) {
-      timer.start(`Finding user by id ${id}`)
+      timer.start(`Finding user by id "${id}"`)
       user = await UserModel.findById(id)
-      timer.stop(`Complete finding user by id ${id}`) 
+      timer.stop(`Complete finding`) 
       if(!user) return RESPONSE_404('User not found, you cann make order as Gast!')
     } else if((!firstName || !secondName || !email) && !id) return RESPONSE_403('Pass data into inputs fileds!')
 
+    timer.start('Generating paypal access token')
+    const { access_token } = await paypal.auth()
+    timer.stop('Complete')
+
+    timer.start(`Capture payment by order id "${orderID}"`)
+    const data = await paypal.caputre(orderID, access_token)
+    timer.stop('Complete')
+    console.log(data)
 
     timer.start('Update products stock and push products in order')
     for(let index = 0; index < products.length; index++) {
@@ -66,7 +75,7 @@ export default async function closeTransaction(req) {
 
       await product.save()
     }    
-    timer.stop('Complete updating products stock and pushing in order')
+    timer.stop('Complete')
 
     timer.start('Create order')
     await OrderModel.create({ 
@@ -79,7 +88,7 @@ export default async function closeTransaction(req) {
       city,
       plz
     })
-    timer.stop('Complete creating order')
+    timer.stop('Complete')
 
     return RESPONSE_200("Complete closing transaction!")
   } catch(error) {

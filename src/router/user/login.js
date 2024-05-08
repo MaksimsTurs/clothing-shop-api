@@ -14,15 +14,15 @@ export default async function login(req) {
 
   let existedUser, response
   let isLogged = false
-  
+
   try {
     timer.start('Check user input validity')
     if(!validationResult(req.body).isEmpty()) return RESPONSE_400("Your data is wrong!")
-    timer.stop('Complete user input validity checking')
+    timer.stop('Complete')
 
-    timer.start('Find user')
+    timer.start(`Find user by firstName: "${firstName}" secondName: "${secondName}" and email: "${email}"`)
     existedUser = await UserModel.findOne({ $and: [{ firstName }, { secondName }, { email }] })
-    timer.stop('Complete getting user by firstName, email and password')
+    timer.stop('Complete')
 
     if(!existedUser) return RESPONSE_404('User not exist!')
 
@@ -32,7 +32,7 @@ export default async function login(req) {
     if(isLogged) {
       timer.start('Update user token')
       const { _id, token, avatar, firstName, secondName } = await UserModel.findByIdAndUpdate(existedUser._id, { token: jwt.sign({ id: existedUser._id, role: existedUser.role }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '2d' }) }, { new: true })
-      timer.stop('Complete updating user token')
+      timer.stop('Complete')
 
       Loger.log('Assign data to response')
       response = { id: _id, name: `${firstName} ${secondName}`, token, avatar }

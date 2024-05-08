@@ -21,16 +21,16 @@ export default async function editUser(req, res) {
     let user, response
     let avatars = []
 
-    Loger.log(`Id ${id} is not valid`)
+    Loger.log(`Check id "${id}" validity`)
     if(!isValidObjectId(id)) return RESPONSE_400('Id is not valid!')
 
-    timer.start('Conver and save user img')
+    timer.start(`Conver and save user img, quality ${USER_AVATAR_QUALITY}`)
     if(files.length > 0) avatars = await convertAndSave(files, USER_AVATAR_QUALITY)
-    timer.stop('Complete converging and saving img')
+    timer.stop('Complete')
 
-    timer.start(`Find user by id ${id}`)
+    timer.start(`Find user by id "${id}"`)
     user = await UserModel.findById(id)
-    timer.stop('Complete finding user')
+    timer.stop('Complete')
 
     Loger.log('Updating user data')
     user.firstName = firstName || user.firstName
@@ -45,7 +45,7 @@ export default async function editUser(req, res) {
     const { role, order } = cache.get(cache.keys.USER_ID + id)
     cache.set(cache.keys.USER_ID + id, {...response, role, order })
     await user.save()
-    timer.stop('Cache and user was updated')
+    timer.stop('Cache')
     
     return response
   } catch(error) {

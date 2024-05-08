@@ -22,9 +22,9 @@ export default async function productPaginationFilter(req) {
     rating = rating === 0 ? 1000 : rating
 
     timer.start('Filtering products')
-    if(isCategorySelected) filteredProducts = await ProductModel.find({ $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: price }, rating: { $lte: rating }, category: { $in: category }}] }] })
+    if(isCategorySelected) filteredProducts = await ProductModel.find({ $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: price }}, { rating: { $lte: rating }}, { category: { $in: category }}] }] })
     else filteredProducts = await ProductModel.find({ $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: price } }, { rating: { $lte: rating } }] }] })
-    timer.stop('Complete filtering products')
+    timer.stop('Complete')
 
     Loger.log(`Slicing products for page, start = ${start} | end = ${end}`)
     filteredProducts = filteredProducts.slice(start, end)
@@ -37,7 +37,7 @@ export default async function productPaginationFilter(req) {
     
     timer.start('Getting sections titles')
     categories = (await SectionModel.find({}, { title: true, _id: false })).map(category => category.title)
-    timer.stop('Complete getting sections title')
+    timer.stop('Complete')
 
 
     Loger.log('Assign max and min values')

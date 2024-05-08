@@ -9,9 +9,9 @@ export default async function getProductByTitle(req) {
   
     let products
 
-    timer.start(`Find product by title ${req.params.title}`)
+    timer.start(`Find product by title "${req.params.title}"`)
     products = await ProductModel.find({ stock: { $gte: 1 }, title: { $regex: req.params.title, $options: 'i' } }, productProjection)
-    timer.stop('Complete finding product by title')
+    timer.stop('Complete')
 
     return { products }
   } catch(error) {

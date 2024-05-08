@@ -13,16 +13,14 @@ const routesHandler = {
   
       timer.start('Start executing route function')
       const targetResponse = await Promise.race([target(...argArray), maxEcutionTime(8000)])
-      timer.stop('Route function completely executed')
+      timer.stop(`Route function executed successfuly, ${JSON.stringify(targetResponse || '').length} byte data sended`)
 
       if(('code' in targetResponse) && ('message' in targetResponse)) {
         const { code, message } = targetResponse
         res.status(code).send({ code, message })
-        Loger.log(`Sendend ${JSON.stringify(targetResponse).length} bytes of data`)
         Loger.response({ code, message })
       } else {
         res.status(200).send(targetResponse)
-        Loger.log(`Sendend ${JSON.stringify(targetResponse).length} bytes of data`)
         Loger.response(targetResponse)
       }
     } catch(error) {

@@ -16,19 +16,19 @@ export default async function addSection(req) {
 
     timer.start('Create new section')
     newSection = await SectionModel.create({ _id: new mongoose.Types.ObjectId(), title, precent, productsID, expiredDate,  isHidden, position })
-    timer.stop('Complete creating new section')
+    timer.stop('Complete')
 
     if(productsID.length > 0) {
       timer.start('Update products')
       await ProductModel.updateMany({ _id: { $in: productsID } }, { precent, sectionID: newSection._id, category: newSection.title })
-      timer.stop('Complete updating products')
+      timer.stop('Complete')
 
       timer.start('Remove cache')
       for(let index = 0; index < productsID.lenght; index++) {
         Loger.log(`Removed product cache id: ${productsID[index]}`)
         cache.remove(cache.keys.PRODUCT_ID + productsID[index])
       }
-      timer.stop('Complete removing cache')
+      timer.stop('Complete')
     }
 
     Loger.log('Remove some other cache')

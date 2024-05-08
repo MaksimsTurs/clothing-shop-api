@@ -14,7 +14,7 @@ export default async function changeWebsiteSetting(req) {
       maxProductsPerPage: parseInt(req.body.maxProductsPerPage),
       isAllProductsHidden: req.body.isAllProductsHidden
     })
-    timer.stop('Complete updating website settings')
+    timer.stop('Complete')
 
     Loger.log('Restore cache')
     cache.restore()

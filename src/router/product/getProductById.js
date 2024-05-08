@@ -15,18 +15,18 @@ export default async function getProductById(req) {
   
     let product = cache.get(cache.keys.PRODUCT_ID + req.params.id)
 
-    Loger.log('Check id validity')
-    if(!isValidObjectId(req.params.id)) return RESPONSE_404("Product not found!")
-
     if(product) {
       Loger.log('Cache HIT, send to client')
       return product
     }
 
     Loger.log('Cache MISS, get data from database')
-    timer.start(`Get product by id "${req.params.id}"`)   
+    Loger.log(`Check id validity "${req.params.id}"`)
+    if(!isValidObjectId(req.params.id)) return RESPONSE_404("Product not found!")
+
+    timer.start(`Finding product by id "${req.params.id}"`)   
     product = await ProductModel.findOne({ _id: req.params.id, stock: { $gte: 1 } }, productProjection)
-    timer.stop(`Complete getting product by id "${req.params.id}"`)
+    timer.stop('Complete')
 
     if(!product) {
       Loger.log(`Product by id "${req.params.id}" not found`)

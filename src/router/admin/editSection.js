@@ -14,9 +14,9 @@ export default async function editSection(req) {
   
     let productsSection
 
-    timer.start(`Get section by id ${id}`)
+    timer.start(`Get section by id "${id}"`)
     productsSection = await SectionModel.findById(id, sectionProjection)
-    timer.stop('Complete getting and updating section section')
+    timer.stop('Complete')
 
     productsSection.title = title
     productsSection.precent = precent
@@ -31,7 +31,7 @@ export default async function editSection(req) {
         if(!productsSection.productsID.includes(productsID[index])) productsSection.productsID.push(productsID[index])
       }
     }
-    timer.stop('Complete updating section in section')
+    timer.stop('Complete')
 
     Loger.log('Update section and cache')
     await productsSection.save()

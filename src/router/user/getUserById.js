@@ -15,22 +15,22 @@ export default async function getUserById(req) {
     let response = cache.get(cache.keys.USER_ID + req.params.id), existedUser
     let order = []  
 
-    if(existedUser) {
+    if(response) {
       Loger.log('Cache HIT, send response to client')
       return response
     }
 
     Loger.log('Cache MISS, get data from database')
-    timer.start(`Get user by id "${req.params.id}"`)
+    timer.start(`Finding user by id "${req.params.id}"`)
     existedUser = await UserModel.findOne({ _id: req.params.id }, commonProjection)
-    timer.stop(`Complete getting user by id "${req.params.id}"`)
+    timer.stop(`Complete`)
 
     Loger.log('User not found')
     if(!existedUser) return RESPONSE_404("User not found!")
 
     timer.start('Get user orders')
     order = await OrderModel.find({ $and: [{ firstName: existedUser.firstName, secondName: existedUser.secondName }] }, commonProjection)
-    timer.stop('Complete getting user orders', 'GETTING_USER_ORDER')
+    timer.stop('Complete')
 
     Loger.log('Assign data to response')
     response = { 

@@ -9,13 +9,13 @@ export default async function removeExpiredSection(req) {
   
     let section
 
-    timer.start(`Removing section by title ${title}`)
+    timer.start(`Removing section by title "${title}"`)
     section = await SectionModel.findOneAndDelete({ title })
-    timer.stop(`Complete removing products section by title ${title}`)
+    timer.stop(`Complete`)
 
     timer.start('Update products where havent relation with section')
     await ProductModel.updateMany({ _id: { $in: section.productsID } }, { precent: null, sectionID: null, category: null })
-    timer.stop('Complete updating products')
+    timer.stop('Complete')
 
     return RESPONSE_200("Successfuly removed!")
   } catch(error) {

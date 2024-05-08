@@ -21,19 +21,19 @@ export default async function deleteItem(req) {
     
     switch(from) {
       case 'product':
-        timer.start(`Remove product by id ${id}`)
+        timer.start(`Remove product by id "${id}"`)
         item = await ProductModel.findByIdAndDelete(id)
-        timer.stop('Complete deleting product')
+        timer.stop('Complete')
 
         if(item && item.images.length > 0) {
           timer.start('Remove product imgs')
           await removeImages(item.images)
-          timer.stop('Complete deleting product img')
+          timer.stop('Complete')
         }
 
         timer.start('Remove product id from section')
         if(item?.sectionID) await SectionModel.updateOne({ _id: item.sectionID }, { $pull: { productsID: String(item._id) } })
-        timer.stop('Complete removing product id from sections')
+        timer.stop('Complete')
 
         Loger.log('Remove some cache')
         cache.remove(cache.keys.PRODUCT_ID + item._id)
@@ -41,33 +41,33 @@ export default async function deleteItem(req) {
         cache.remove(cache.keys.ADMIN_STORE_DATA)
       break;
       case 'section':
-        timer.start(`Remove section by id ${id}`)
+        timer.start(`Remove section by id "${id}"`)
         item = await SectionModel.findByIdAndDelete(id)
-        timer.stop(`Complete removing section by id ${id}`)
+        timer.stop(`Complete`)
 
         timer.start('Update products data')
         await ProductModel.updateMany({ _id: { $in: item.productsID } }, { precent: null, sectionID: null, category: null })
-        timer.stop('Complete updating products')
+        timer.stop('Complete')
 
         timer.start('Remove cache')
         for(let index = 0; index < item.productsID.length; index++) {
-          Loger.log(`Removed cache ${item.productsID[index]}`)
+          Loger.log(`Removed cache "${item.productsID[index]}"`)
           cache.remove(cache.keys.PRODUCT_ID + item.productsID[index])
         }
         cache.remove(cache.keys.ADMIN_STORE_DATA)
         cache.remove(cache.keys.HOME_DATA)
-        timer.stop('Complete removing cache')
+        timer.stop('Complete')
       break;
       case 'order':
         let productsID = []
 
-        timer.start(`Remove item by ${id}`)
+        timer.start(`Remove item by "${id}"`)
         item = await OrderModel.findByIdAndDelete(id)
-        timer.stop('Complete removing order')
+        timer.stop('Complete')
 
         timer.start('Get products id by ids')
         productsID = await ProductModel.find({ _id: { $in: item.toBuy.map(product => product._id) } })
-        timer.stop('Complete getting products from order')
+        timer.stop('Complete')
 
         timer.start('Remove products and cache')
         for(let index = 0; index < productsID.length; index++) {
@@ -78,7 +78,7 @@ export default async function deleteItem(req) {
             cache.remove(cache.keys.PRODUCT_ID + product._id)
           } else cache.set(cache.keys.PRODUCT_ID + product._id)
         }
-        timer.stop('Complete deleting products where have stock equal to 0')
+        timer.stop('Complete')
       break;
     }
 

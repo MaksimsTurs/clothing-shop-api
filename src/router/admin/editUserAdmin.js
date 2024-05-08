@@ -16,13 +16,13 @@ export default async function editUserAdmin(req) {
   
     let user, avatar
 
-    timer.start('Convert new user img')
+    timer.start(`Convert new user img, quality ${50}`)
     if(Array.isArray(files) && files.length > 0) avatar = await convertAndSave(files, 50)
-    timer.stop('Complete converting and saving imgs')
+    timer.stop('Complete')
 
-    timer.start(`Update user by id ${id}`)
+    timer.start(`Update user by id "${id}"`)
     user = await UserModel.findById(id, userProjection)
-    timer.stop('Complete updating user')
+    timer.stop('Complete')
 
     user.firstName = firstName
     user.secondName = secondName
@@ -33,7 +33,7 @@ export default async function editUserAdmin(req) {
     cache.remove(cache.keys.ADMIN_STORE_DATA)
     cache.set(cache.keys.USER_ID + id)
     await user.save()
-    timer.stop('Complete removing and updating user')
+    timer.stop('Complete')
 
     return user._doc
   } catch(error) {

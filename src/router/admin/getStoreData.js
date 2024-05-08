@@ -24,24 +24,25 @@ export default async function getStoreData() {
     }
 
     Loger.log('Cache MISS, get data from database')
-    Loger.log('Get website settings')
-    websiteSettings = (await WebsiteSettingsModel.find())[0]
+    timer.start('Get website settings')
+    websiteSettings = (await WebsiteSettingsModel.find({}, {...commonProjection, createdAt: false, updatedAt: false, _id: false, key: false }))[0]
+    timer.stop('Complete')
 
     timer.start('Get all products')
     products = await ProductModel.find({}, commonProjection)
-    timer.stop('Complete getting products')
+    timer.stop('Complete')
 
     timer.start('Get all users')
     users = await UserModel.find({}, {...userProjection, ...commonProjection })
-    timer.stop('Complete getting users')
+    timer.stop('Complete')
 
     timer.start('Get all sections')
     productsSection = await SectionModel.find({}, commonProjection, { populate: { path: 'productsID' } })
-    timer.stop('Complete getting product sections')
+    timer.stop('Complete')
 
-    timer.start('Get all orders')
-    orders = await OrderModel.find({}, commonProjection, { populate: { path: 'toBuy._id' } })
-    timer.stop('Complete getting orders')
+    timer.start('Get all orders ')
+    orders = await OrderModel.find({}, commonProjection)
+    timer.stop('Complete')
 
     timer.start('Pushing products in section')
     for(let index = 0; index < productsSection.length; index++) {
@@ -51,10 +52,12 @@ export default async function getStoreData() {
         productsID: productsSection[index].productsID.map(product => product._id)
       }
     }	
-    timer.stop('Complete pushing ids in productsID and products in products')
+    timer.stop('Complete')
 
+    Loger.log('Assign data to response')
     response = { products, productsSection, users, orders, websiteSettings }
 
+    Loger.log('Save response in cache')
     cache.set(cache.keys.ADMIN_STORE_DATA, response)
 
     return response

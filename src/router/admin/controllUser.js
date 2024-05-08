@@ -7,7 +7,7 @@ export default async function controllUser(req) {
 
     timer.start('Check is user authorizated')
     const checkRes = await isAuth(req.params.token, true)
-    timer.stop('Complete checking authorization')
+    timer.stop('Complete')
     
     return (checkRes.code === 200) ? { isAdmin: true } : { isAdmin: false }
   } catch(error) {

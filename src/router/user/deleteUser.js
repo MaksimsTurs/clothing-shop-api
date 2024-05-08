@@ -11,9 +11,9 @@ export default async function deleteUser(req) {
     Loger.log('User are not authorizated')
     if(!req.params.token) return RESPONSE_403('User are not authorizated')
     
-    timer.start(`Find user and delete by token ${req.params.token}`)
+    timer.start(`Find user and delete by token "${req.params.token}"`)
     user = await UserModel.findOneAndDelete({ token: req.params.token })
-    timer.stop('Complete deleting user account')
+    timer.stop('Complete')
 
     return { isRemoved: user ? true : false }
   } catch(error) {

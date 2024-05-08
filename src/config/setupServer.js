@@ -17,6 +17,7 @@ import login from "../router/user/login.js"
 import getUserById from "../router/user/getUserById.js"
 import editUser from "../router/user/editUser.js"
 import deleteUser from "../router/user/deleteUser.js"
+import authorizate from "../router/user/authorizate.js"
 
 import getProductById from "../router/product/getProductById.js"
 import productPaginationFilter from "../router/product/productPaginationFilter.js"
@@ -49,28 +50,29 @@ export default async function setupServer(server) {
 
     Loger.log(`Server starting in mode "${process.env.NODE_ENV.trim()}"`)
 
-    timer.start('Start listening server and connecting to database')
+    timer.start('Start listening server and connecting to mongodb')
     server.listen(DEV_PORT, DEV_HOST)  
     await connectDB()
-    timer.stop('Successfuly connected to mongo')
+    timer.stop('Complete')
 
-    Loger.log('Get website settings')
+    timer.start('Getting website settings from database')
     const settings = (await WebsiteSettingModel.find())[0]
+    timer.stop('Complete')
 
     if(!settings) {
       Loger.log('No settings was founded')
       timer.start('Creating and saving website settings')
       await WebsiteSettingModel.create({ defaultDeliveryFee: 5, isAllProductsHidden: false, key: 'websitesettings', maxProductsPerPage: 12 })
-      timer.stop('Complete creating and saving website settings')
+      timer.stop('Complete')
     } 
 
     Loger.log('Proxyfying route functions')
-    const User = proxifier([registration, login, getUserById, editUser, deleteUser])
+    const User = proxifier([registration, login, getUserById, editUser, deleteUser, authorizate])
     const Product = proxifier([getProductById, productPaginationFilter, getProductByTitle])
     const Other = proxifier([getHomePageData, removeExpiredSection, checkout, createOrder, closeTransaction])
     const Admin = proxifier([editProduct, editSection, editUserAdmin, addProduct, addSection, changeOrderStatus, changeWebsiteSetting, controllUser, deleteItem, getStoreData])
     
-    Loger.log('Creating memory storage for uploader')
+    Loger.log('Creating memory storage for image uploader')
     const storage = memoryStorage({ filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`) })
 
     Loger.log('Creating cache storage')

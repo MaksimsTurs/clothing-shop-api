@@ -8,7 +8,7 @@ export default async function changeOrderStatus(req) {
 
     timer.start('Update order status')
     await OrderModel.findByIdAndUpdate(req.body.id, { status: req.body.status })
-    timer.stop('Complete updating status')
+    timer.stop('Complete')
 
     return req.body
   } catch(error) {

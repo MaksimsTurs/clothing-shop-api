@@ -19,13 +19,13 @@ export default async function editProduct(req) {
     let updatedProduct, updatedCategory, response
     let imgs = []
 
-    timer.start('Convert and save product imgs')
+    timer.start(`Convert and save product imgs, quality ${70}`)
     if(files.length > 0) imgs = await convertAndSave(files, 70)
-    timer.stop('Complete converting and saving product img')
+    timer.stop('Complete')
 
-    timer.start(`Get products by id ${_id}`)
+    timer.start(`Get products by id "${_id}"`)
     updatedProduct = await ProductModel.findById({ _id })
-    timer.stop(`Complete getting product by id ${_id}`)
+    timer.stop(`Complete`)
 
     //When section was selected, push the new ID and update product.
     if(!isUndefinedOrNull(category) && updatedProduct.stock > 0) {
@@ -35,7 +35,7 @@ export default async function editProduct(req) {
         timer.start('Push into section new product id')
         updatedCategory.productsID = [...updatedCategory.productsID, _id]
         await updatedCategory.save()
-        timer.stop('Complete push id into category and save')
+        timer.stop('Complete')
       }
     }
 
@@ -51,7 +51,7 @@ export default async function editProduct(req) {
       category: !isUndefinedOrNull(updatedProduct?.category) ? updatedProduct.category : updatedCategory?.title || null,
       images: imgs.length > 0 ? imgs[0] : updatedProduct.images,
     }, { new: true, projection: commonProjection })
-    timer.stop('Complete updating product')
+    timer.stop('Complete')
 
     Loger.log('Remove some cache')
     cache.remove(cache.keys.ADMIN_STORE_DATA)

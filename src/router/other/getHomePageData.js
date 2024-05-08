@@ -25,31 +25,31 @@ export default async function getHomePageData() {
     }
 
     Loger.log('Cache MISS, get data from database')
-    timer.start(`Get website settings`)
+    timer.start(`Get website settings from database`)
     settings = (await WebsiteSettingsModel.find())[0]
-    timer.stop('Complete getting website settings')
+    timer.stop('Complete')
 
     if(!settings.isAllProductsHidden) {
-      timer.start('Get products from database')
+      timer.start('Get products from database their stock greater then "1"')
       products = await ProductModel.find({ stock: { $gte: 1 } }, {...commonProjection, ...productProjection })
-      timer.stop('Complete getting products')
+      timer.stop('Complete')
     }
     
-    timer.start('Get sections from database')
+    timer.start('Get sections from database there is not hidden, populate "productsID" with stock greater then "1"')
     sections = await SectionModel.find({ isHidden: false }, commonProjection, { populate: { path: 'productsID', match: { stock: { $gte: 1 } } } })
-    timer.stop('Complete getting sections')
+    timer.stop('Complete')
     
     timer.start('Get orders count')
     ordersCount = await OrderModel.countDocuments()
-    timer.stop('Complete getting orders count')
+    timer.stop('Complete')
     
     timer.start('Get users accounts count')
     usersCount = await UserModel.countDocuments()
-    timer.stop('Complete getting users accounts count')
+    timer.stop('Complete')
 
     timer.start('Get products count')
     productsCount = await ProductModel.countDocuments()
-    timer.stop('Complete getting products count')
+    timer.stop('Complete')
 
     Loger.log('Assign data to response')
     response = { 
@@ -60,7 +60,7 @@ export default async function getHomePageData() {
       sections: sections.map(section => ({...section._doc, products: section.productsID }))
     }
 
-    Loger.log('Save response into cache and return him')
+    Loger.log('Save response into cache')
     cache.set(cache.keys.HOME_DATA, response)
 
     return response

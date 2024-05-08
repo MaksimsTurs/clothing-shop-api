@@ -24,30 +24,31 @@ export default async function registration(req) {
 
     timer.start('Check user input validity')
     if(!validationResult(req.body).isEmpty() || (password.trim() !== confirmPassword.trim())) return RESPONSE_400('Name or E-Mail is incorrect!')
-    timer.stop('Check is successfuly completed')
+    timer.stop('Complete')
 
-    timer.start(`Check is user with { ${firstName} ${secondName} ${email} } exist`)
+    timer.start(`Check is user with firstName "${firstName}" secondName "${secondName}" and email "${email}" exist`)
     existedUser =  await UserModel.findOne({ $or: [{ $and: [{ firstName }, { secondName }] }, { $or: [{ email }] }] })
     if(existedUser) return RESPONSE_409("User alredy exist!")
-    timer.stop('Succesfuly checked, user not exist')
+    timer.stop('Complete')
 
 
-    Loger.text('Generating password salt')
+    Loger.log('Generating password salt')
     salt = await bcrypt.genSalt()
 
-    Loger.text('Generating ObjectId')
+    Loger.log('Generating ObjectId')
     _id = new mongoose.Types.ObjectId()
     
-    Loger.text('Generating token')
+    Loger.log('Generating token')
     token = jwt.sign({ _id }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '2d' })
     
     timer.start(`Converting and saving user avatar, img quality ${USER_AVATAR_QUALITY}`)
     if(files.length > 0) avatar = await convertAndSave(files, USER_AVATAR_QUALITY)
-    timer.stop('User avatar is successfuly converted and saved')
+    timer.stop('Complete')
+
 
     timer.start('Creating and saving new user')
-    registratedUser = await UserModel.create({ _id, firstName, secondName, email, token, password: await bcrypt.hash(password, salt), avatar: avatar[0] })
-    timer.stop('New user are successfuly created and saved')
+    registratedUser = await UserModel.create({ _id, firstName, secondName, email, token, password: await bcrypt.hash(password, salt), avatar: avatar?.[0] || null })
+    timer.stop('Complete')
 
     return { id: registratedUser._id, avatar: registratedUser.avatar, name: `${firstName} ${secondName}`, token }
   } catch(error) {

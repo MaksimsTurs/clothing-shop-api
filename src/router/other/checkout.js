@@ -16,12 +16,13 @@ export default async function checkout(req) {
       let response = { products: [], totalItemsPrice: 0, totalPriceWithDiscount: 0, totalOrderPrice: 0, delivery: 0, discount: 0, warnings: [] }
   
       const productProjection = { __v: false, createdAt: false, updatedAt: false, description: false, sectionID: false, category: false }
-      const checkID = crypto.randomUUID()
       const productsID = req.body.map(product => product._id)
+
+      const checkID = crypto.randomUUID()
 
       timer.start('Get products by id')
       response.products = await ProductModel.find({ _id: { $in: productsID } }, productProjection)
-      timer.stop('Complete getting products')
+      timer.stop('Complete')
 
       timer.start('Calculate products price, discount and order price')
       for(let index = 0; index < response.products.length; index++) {
@@ -40,7 +41,7 @@ export default async function checkout(req) {
         
         response.products[index] = currProduct
       }
-      timer.stop('Complete calculate products price, discount and order price')
+      timer.stop('Complete')
       
       
       Loger.log('Assign discount, total order price and delivery')
@@ -51,7 +52,7 @@ export default async function checkout(req) {
       if(response.totalPriceWithDiscount < 100) {
         timer.start('Get delivery fee price from settings')
         response.delivery = parseFloat((await WebsiteSettingsModel.find())[0].deliveryFee)
-        timer.stop('Complete getting delivery fee price from settings')
+        timer.stop('Complete')
       } else response.delivery = 0
       response.totalOrderPrice = +(response.totalPriceWithDiscount + +response.delivery).toFixed(2)
       

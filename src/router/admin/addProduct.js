@@ -20,13 +20,13 @@ export default async function addProduct(req) {
     let newProduct, updatedSection, response
     let imgs = []
 
-    timer.start('Conver and save product imgs')
+    timer.start(`Conver and save product imgs, quality ${70}`)
     if(files.length > 0) imgs = await convertAndSave(files, 70)
-    timer.stop('Complete converting and saving product imgs')
+    timer.stop('Complete')
 
     timer.start('Create product')
     newProduct = new ProductModel({ _id: new mongoose.Types.ObjectId(), images: imgs, title, description, price, stock, rating })
-    timer.stop('Complete creating product')
+    timer.stop('Complete')
 
     // Will be called when ADMIN have selected the section, push new Product ID in existed section.
     if(!isUndefinedOrNull(category)) {
@@ -35,7 +35,7 @@ export default async function addProduct(req) {
       newProduct.sectionID = updatedSection._id
       newProduct.precent = updatedSection.precent
       newProduct.category = updatedSection.title
-      timer.stop('Complete updating products and sections')
+      timer.stop('Complete')
     }		
     
     timer.start('Save product and update cache')
@@ -43,7 +43,7 @@ export default async function addProduct(req) {
     cache.remove(cache.keys.ADMIN_STORE_DATA)
     cache.set(cache.keys.PRODUCT_ID + newProduct._id)
     cache.remove(cache.keys.HOMDE_DATA)
-    timer.stop('Complete saving product and update cache')
+    timer.stop('Complete')
 
     Loger.log('Assign data to response')
     response = { newProduct, updatedSection }

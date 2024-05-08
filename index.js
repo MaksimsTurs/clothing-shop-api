@@ -12,6 +12,7 @@ const timer = new Loger.create.Timer()
 
 server.use(cors())
 server.use(express.json())
+server.use(express.urlencoded({ extended: true }))
 
 timer.start('Starting configuring server')
 export const { cache, upload, User, Product, Other, Admin } = await setupServer(server)
@@ -25,9 +26,10 @@ server.post('/close-transaction',               createOrderValidator, Other.clos
 /*----------------------------------------------------------------------------------------------------*/
 server.get('/user/:id',                         User.getUserById)
 server.get('/user/remove/:id',                  User.deleteUser)
-server.post("/user/login",                      loginValidator, User.login)
+server.post("/user/login",                      upload.any(), loginValidator, User.login)
 server.post("/user/registration",               upload.any(), registrationValidator, User.registration)
 server.post('/user/edit',                       upload.any(), User.editUser)
+server.post('/user/auth',                       User.authorizate)
 /*----------------------------------------------------------------------------------------------------*/
 server.get('/product/:id',                      Product.getProductById)
 server.get('/product/find-by-title/:title',     Product.getProductByTitle)
