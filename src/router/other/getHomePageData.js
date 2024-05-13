@@ -18,7 +18,7 @@ export default async function getHomePageData() {
   
     const commonProjection = { __v: false, createdAt: false, updatedAt: false }
     const productProjection = { category: false, sectionID: false }
-    
+    console.log(response)
     if(response) {
       Loger.log('Cache HIT, send response to client')
       return response

@@ -16,7 +16,7 @@ server.use(express.urlencoded({ extended: true }))
 
 timer.start('Starting configuring server')
 export const { cache, upload, User, Product, Other, Admin } = await setupServer(server)
-timer.stop('Server configuration completed')
+timer.stop('Completed')
 
 server.get('/',                                 Other.getHomePageData)
 server.get('/remove-section/:title',            Other.removeExpiredSection)

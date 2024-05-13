@@ -8,11 +8,14 @@ export default async function productPaginationFilter(req) {
   try {
     const timer = new Loger.create.Timer()
     let { category, price, rating, page } = req.body
-    const MAX_CONTENT_PER_PAGE = (await WebsiteSettingsModel.find())[0].maxProductsPerPage
+
+    timer.start('Getting max products per page property')
+    const { maxProductsPerPage } = await WebsiteSettingsModel.findOne({ key: 'websitesettings' }, { maxProductsPerPage: true })
+    timer.start('Complete')
   
     const isCategorySelected = category.length > 0
-    const start = Number(page) * MAX_CONTENT_PER_PAGE
-    const end = Number(start) + MAX_CONTENT_PER_PAGE
+    const start = Number(page) * maxProductsPerPage
+    const end = Number(start) + maxProductsPerPage
     
     let filteredProducts = [], categories = []
     let maxPages = 0, currPage = Number(page), maxProducts = 0
@@ -22,15 +25,32 @@ export default async function productPaginationFilter(req) {
     rating = rating === 0 ? 1000 : rating
 
     timer.start('Filtering products')
-    if(isCategorySelected) filteredProducts = await ProductModel.find({ $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: price }}, { rating: { $lte: rating }}, { category: { $in: category }}] }] })
-    else filteredProducts = await ProductModel.find({ $and: [{ stock: { $gte: 1 }}, { $or: [{ price: { $lte: price } }, { rating: { $lte: rating } }] }] })
+    if(isCategorySelected) {
+      filteredProducts = await ProductModel.find({ 
+        $and: [
+          { stock: { $gte: 1 }}, 
+          { $and: [
+            { price: { $lte: price }}, 
+            { rating: { $lte: rating }}, 
+            { category: { $in: category }}] 
+          }
+        ] 
+      })
+    } else {
+      filteredProducts = await ProductModel.find({ 
+        $and: [
+          { stock: { $gte: 1 }}, 
+          { $and: [{ price: { $lte: price } }, { rating: { $lte: rating } }] }
+        ] 
+      })
+    }
     timer.stop('Complete')
+
+    Loger.log('Calculate pages count')
+    maxPages = Math.ceil(filteredProducts.length / maxProductsPerPage)
 
     Loger.log(`Slicing products for page, start = ${start} | end = ${end}`)
     filteredProducts = filteredProducts.slice(start, end)
-
-    Loger.log('Calculate pages count')
-    maxPages = Math.ceil(filteredProducts.length / MAX_CONTENT_PER_PAGE)
     
     Loger.log('Get filtered products count')
     maxProducts = filteredProducts.length
