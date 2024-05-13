@@ -34,7 +34,7 @@ export default async function getProductById(req) {
     }
 
     Loger.log('Updating cache')
-    cache.set(cache.keys.PRODUCT_ID + req.params.id, {...product._doc })
+    // cache.set(cache.keys.PRODUCT_ID + req.params.id, {...product._doc })
     
     return product._doc
   } catch(error) {

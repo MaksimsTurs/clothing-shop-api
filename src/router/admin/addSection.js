@@ -26,14 +26,14 @@ export default async function addSection(req) {
       timer.start('Remove cache')
       for(let index = 0; index < productsID.lenght; index++) {
         Loger.log(`Removed product cache id: ${productsID[index]}`)
-        cache.remove(cache.keys.PRODUCT_ID + productsID[index])
+        // cache.remove(cache.keys.PRODUCT_ID + productsID[index])
       }
       timer.stop('Complete')
     }
 
     Loger.log('Remove some other cache')
-    cache.remove(cache.keys.ADMIN_STORE_DATA)
-    cache.remove(cache.keys.HOME_DATA)
+    // cache.remove(cache.keys.ADMIN_STORE_DATA)
+    // cache.remove(cache.keys.HOME_DATA)
 
     return newSection
   } catch(error) {

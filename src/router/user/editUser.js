@@ -43,7 +43,7 @@ export default async function editUser(req, res) {
 
     timer.start('Saving user data and update cache')
     const { role, order } = cache.get(cache.keys.USER_ID + id)
-    cache.set(cache.keys.USER_ID + id, {...response, role, order })
+    // cache.set(cache.keys.USER_ID + id, {...response, role, order })
     await user.save()
     timer.stop('Cache')
     

@@ -17,7 +17,7 @@ export default async function changeWebsiteSetting(req) {
     timer.stop('Complete')
 
     Loger.log('Restore cache')
-    cache.restore()
+    // cache.restore()
 
     return req.body
   } catch(error) {

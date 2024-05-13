@@ -42,7 +42,7 @@ export default async function getUserById(req) {
     }
 
     Loger.log('Update cache')
-    cache.set(cache.keys.USER_ID + req.params.id, response)
+    // cache.set(cache.keys.USER_ID + req.params.id, response)
 
     return response
   } catch(error) {

@@ -36,9 +36,9 @@ export default async function deleteItem(req) {
         timer.stop('Complete')
 
         Loger.log('Remove some cache')
-        cache.remove(cache.keys.PRODUCT_ID + item._id)
-        cache.remove(cache.keys.HOME_DATA)
-        cache.remove(cache.keys.ADMIN_STORE_DATA)
+        // cache.remove(cache.keys.PRODUCT_ID + item._id)
+        // cache.remove(cache.keys.HOME_DATA)
+        // cache.remove(cache.keys.ADMIN_STORE_DATA)
       break;
       case 'section':
         timer.start(`Remove section by id "${id}"`)
@@ -52,10 +52,10 @@ export default async function deleteItem(req) {
         timer.start('Remove cache')
         for(let index = 0; index < item.productsID.length; index++) {
           Loger.log(`Removed cache "${item.productsID[index]}"`)
-          cache.remove(cache.keys.PRODUCT_ID + item.productsID[index])
+          // cache.remove(cache.keys.PRODUCT_ID + item.productsID[index])
         }
-        cache.remove(cache.keys.ADMIN_STORE_DATA)
-        cache.remove(cache.keys.HOME_DATA)
+        // cache.remove(cache.keys.ADMIN_STORE_DATA)
+        // cache.remove(cache.keys.HOME_DATA)
         timer.stop('Complete')
       break;
       case 'order':
@@ -75,7 +75,7 @@ export default async function deleteItem(req) {
 
           if(product.stock <= 0) {
             await ProductModel.findByIdAndDelete(product._id)
-            cache.remove(cache.keys.PRODUCT_ID + product._id)
+            // cache.remove(cache.keys.PRODUCT_ID + product._id)
           } else cache.set(cache.keys.PRODUCT_ID + product._id)
         }
         timer.stop('Complete')

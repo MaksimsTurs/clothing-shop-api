@@ -58,7 +58,7 @@ export default async function getStoreData() {
     response = { products, productsSection, users, orders, websiteSettings }
 
     Loger.log('Save response in cache')
-    cache.set(cache.keys.ADMIN_STORE_DATA, response)
+    // cache.set(cache.keys.ADMIN_STORE_DATA, response)
 
     return response
   } catch(error) {

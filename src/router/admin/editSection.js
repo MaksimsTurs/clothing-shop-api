@@ -35,8 +35,8 @@ export default async function editSection(req) {
 
     Loger.log('Update section and cache')
     await productsSection.save()
-    cache.remove(cache.keys.ADMIN_STORE_DATA)
-    cache.remove(cache.keys.HOME_DATA)
+    // cache.remove(cache.keys.ADMIN_STORE_DATA)
+    // cache.remove(cache.keys.HOME_DATA)
 
     return productsSection._doc
   } catch(error) {

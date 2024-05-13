@@ -30,8 +30,8 @@ export default async function editUserAdmin(req) {
     user.avatar = avatar ? avatar[0] : user.avatar
 
     timer.start('Remove some cache and update user')    
-    cache.remove(cache.keys.ADMIN_STORE_DATA)
-    cache.set(cache.keys.USER_ID + id)
+    // cache.remove(cache.keys.ADMIN_STORE_DATA)
+    // cache.set(cache.keys.USER_ID + id)
     await user.save()
     timer.stop('Complete')
 

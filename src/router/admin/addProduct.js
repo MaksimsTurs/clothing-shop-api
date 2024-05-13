@@ -40,9 +40,9 @@ export default async function addProduct(req) {
     
     timer.start('Save product and update cache')
     await newProduct.save()
-    cache.remove(cache.keys.ADMIN_STORE_DATA)
-    cache.set(cache.keys.PRODUCT_ID + newProduct._id)
-    cache.remove(cache.keys.HOMDE_DATA)
+    // cache.remove(cache.keys.ADMIN_STORE_DATA)
+    // cache.set(cache.keys.PRODUCT_ID + newProduct._id)
+    // cache.remove(cache.keys.HOMDE_DATA)
     timer.stop('Complete')
 
     Loger.log('Assign data to response')

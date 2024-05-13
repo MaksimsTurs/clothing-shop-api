@@ -61,7 +61,7 @@ export default async function getHomePageData() {
     }
 
     Loger.log('Save response into cache')
-    cache.set(cache.keys.HOME_DATA, response)
+    // cache.set(cache.keys.HOME_DATA, response)
 
     return response
   } catch(error) {

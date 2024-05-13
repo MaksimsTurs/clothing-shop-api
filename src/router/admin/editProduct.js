@@ -54,9 +54,9 @@ export default async function editProduct(req) {
     timer.stop('Complete')
 
     Loger.log('Remove some cache')
-    cache.remove(cache.keys.ADMIN_STORE_DATA)
-    cache.remove(cache.keys.HOME_DATA)
-    cache.set(cache.keys.PRODUCT_ID + _id, updatedProduct._doc)
+    // cache.remove(cache.keys.ADMIN_STORE_DATA)
+    // cache.remove(cache.keys.HOME_DATA)
+    // cache.set(cache.keys.PRODUCT_ID + _id, updatedProduct._doc)
 
     Loger.log('Assign data to response')
     response = { updatedProduct, updatedCategory }
