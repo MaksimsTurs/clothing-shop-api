@@ -29,18 +29,17 @@ export default async function productPaginationFilter(req) {
       filteredProducts = await ProductModel.find({ 
         $and: [
           { stock: { $gte: 1 }}, 
-          { $and: [
-            { price: { $lte: price }}, 
-            { rating: { $lte: rating }}, 
-            { category: { $in: category }}] 
-          }
+          { price: { $lte: price }}, 
+          { rating: { $lte: rating }}, 
+          { category: { $in: category }}
         ] 
       })
     } else {
       filteredProducts = await ProductModel.find({ 
         $and: [
           { stock: { $gte: 1 }}, 
-          { $and: [{ price: { $lte: price } }, { rating: { $lte: rating } }] }
+          { price: { $lte: price }}, 
+          { rating: { $lte: rating }}
         ] 
       })
     }
