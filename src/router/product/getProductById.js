@@ -2,7 +2,7 @@ import { isValidObjectId } from "mongoose"
 
 import Loger from "../../util/loger/loger.js"
 
-import ProductModel from "../../model/productModel.js"
+import Product from "../../model/product.model.js"
 
 import { cache } from '../../../index.js'
 
@@ -11,7 +11,6 @@ import { RESPONSE_404 } from "../../constants/error-constans.js"
 export default async function getProductById(req) {  
   try {
     const timer = new Loger.create.Timer()
-    const productProjection = { __v: false, createdAt: false, updatedAt: false, sectionID: false }
   
     let product = cache.get(cache.keys.PRODUCT_ID + req.params.id)
 
@@ -25,7 +24,11 @@ export default async function getProductById(req) {
     if(!isValidObjectId(req.params.id)) return RESPONSE_404("Product not found!")
 
     timer.start(`Finding product by id "${req.params.id}"`)   
-    product = await ProductModel.findOne({ _id: req.params.id, stock: { $gte: 1 } }, productProjection)
+    product = await Product.findOne({ _id: req.params.id }, undefined, { populate: ['actionID', 'categoryID'] })
+    product._doc.precent = product?.actionID?.precent || 0
+    product._doc.category = product?.categoryID?.title
+    product._doc.categoryID = product?.categoryID?._id
+    product._doc.actionID = product?.actionID?._id
     timer.stop('Complete')
 
     if(!product) {
@@ -34,7 +37,7 @@ export default async function getProductById(req) {
     }
 
     Loger.log('Updating cache')
-    // cache.set(cache.keys.PRODUCT_ID + req.params.id, {...product._doc })
+    cache.set(cache.keys.PRODUCT_ID + req.params.id, {...product._doc })
     
     return product._doc
   } catch(error) {

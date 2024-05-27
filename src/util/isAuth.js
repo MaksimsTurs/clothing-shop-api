@@ -6,7 +6,7 @@ import isNullOrUndefined from './isUndefinedOrNull.js'
 import { RESPONSE_403, RESPONSE_404, RESPONSE_500 } from '../constants/error-constans.js'
 import { RESPONSE_200 } from '../constants/succes-constans.js'
 
-import UserModel from '../model/userModel.js'
+import UserModel from '../model/user.model.js'
 
 const USER_ARE_NOT_AUTHORIZATED = "You are not Authorizated!"
 const USER_NOT_FOUND = "User not found!"
@@ -29,7 +29,7 @@ export default async function isAuth(secret, isAdmin) {
 
     if(!existedUser) return RESPONSE_404(USER_NOT_FOUND)
     
-    if(isAdmin && existedUser.role !== 'admin') return RESPONSE_403(USER_HAVE_NO_PERMISSION)
+    if(isAdmin && existedUser.role !== 'ADMIN') return RESPONSE_403(USER_HAVE_NO_PERMISSION)
 
     return {...RESPONSE_200(USER_AUTHORIZATE_SUCCES), ...existedUser._doc }
   } catch(error) {

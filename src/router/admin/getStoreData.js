@@ -2,64 +2,57 @@ import Loger from "../../util/loger/loger.js"
 
 import { cache } from "../../../index.js"
 
-import ProductModel from '../../model/productModel.js'
-import SectionModel from '../../model/productSectionModel.js'
-import UserModel from '../../model/userModel.js'
-import OrderModel from '../../model/orderModel.js'
-import WebsiteSettingsModel from '../../model/websiteSetting.js'
+import Product from '../../model/product.model.js'
+import Action from '../../model/action.model.js'
+import User from '../../model/user.model.js'
+import Order from '../../model/order.model.js'
+import Setting from '../../model/settings.model.js'
+import Category from '../../model/category.model.js'
 
 export default async function getStoreData() {
   try {
     const timer = new Loger.create.Timer()
   
-    let products = [], productsSection = [], users = [], orders = []
+    let products = [], productAction = [], users = [], orders = [], productCategory = []
     let websiteSettings, response = cache.get(cache.keys.ADMIN_STORE_DATA)
-  
-    const commonProjection = { __v: false }
-    const userProjection = { password: false, token: false }
-  
+
     if(response) {
       Loger.log('Cache HIT, send response to client')
       return response
     }
 
     Loger.log('Cache MISS, get data from database')
-    timer.start('Get website settings')
-    websiteSettings = (await WebsiteSettingsModel.find({}, {...commonProjection, createdAt: false, updatedAt: false, _id: false, key: false }))[0]
-    timer.stop('Complete')
+    timer.start()
+    websiteSettings = await Setting.findOne({ key: 'default' })
+    timer.stop('Get website settings')
 
-    timer.start('Get all products')
-    products = await ProductModel.find({}, commonProjection)
-    timer.stop('Complete')
+    timer.start()
+    products = await Product.find()
+    timer.stop('Get all products')
 
-    timer.start('Get all users')
-    users = await UserModel.find({}, {...userProjection, ...commonProjection })
-    timer.stop('Complete')
+    timer.start()
+    users = await User.find()
+    timer.stop('Get all users')
 
-    timer.start('Get all sections')
-    productsSection = await SectionModel.find({}, commonProjection, { populate: { path: 'productsID' } })
-    timer.stop('Complete')
+    timer.start()
+    productAction = await Action.find()
+    timer.stop('Get all actions')
 
-    timer.start('Get all orders ')
-    orders = await OrderModel.find({}, commonProjection)
-    timer.stop('Complete')
+    timer.start()
+    orders = await Order.find()
+    timer.stop('Get all orders')
 
-    timer.start('Pushing products in section')
-    for(let index = 0; index < productsSection.length; index++) {
-      productsSection[index] = {
-        ...productsSection[index]._doc, 
-        products: productsSection[index].productsID,
-        productsID: productsSection[index].productsID.map(product => product._id)
-      }
-    }	
-    timer.stop('Complete')
+    timer.start()
+    productCategory = await Category.find()
+    timer.stop('Get all categories')
 
     Loger.log('Assign data to response')
-    response = { products, productsSection, users, orders, websiteSettings }
+    response = { products, productAction, productCategory, users, orders, websiteSettings }
 
     Loger.log('Save response in cache')
-    // cache.set(cache.keys.ADMIN_STORE_DATA, response)
+    cache.set(cache.keys.ADMIN_STORE_DATA, response)
 
+    Loger.log('Return response')
     return response
   } catch(error) {
     throw new Error(error.message)

@@ -1,6 +1,6 @@
 import Loger from "../../util/loger/loger.js"
 
-import UserModel from '../../model/userModel.js'
+import UserModel from '../../model/user.model.js'
 
 export default async function deleteUser(req) {  
   try {

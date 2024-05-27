@@ -1,6 +1,6 @@
 import Loger from "../../util/loger/loger.js"
 
-import OrderModel from '../../model/orderModel.js'
+import OrderModel from '../../model/order.model.js'
 
 export default async function changeOrderStatus(req) {
   try {

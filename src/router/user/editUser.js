@@ -5,7 +5,7 @@ import convertAndSave from '../../util/data-utils/convertAndSave.js'
 import { USER_AVATAR_QUALITY } from "../../constants/num-constans.js"
 import { RESPONSE_400 } from "../../constants/error-constans.js"
 
-import UserModel from '../../model/userModel.js'
+import UserModel from '../../model/user.model.js'
 
 import { cache } from '../../../index.js'
 
@@ -43,7 +43,7 @@ export default async function editUser(req, res) {
 
     timer.start('Saving user data and update cache')
     const { role, order } = cache.get(cache.keys.USER_ID + id)
-    // cache.set(cache.keys.USER_ID + id, {...response, role, order })
+    cache.set(cache.keys.USER_ID + id, {...response, role, order })
     await user.save()
     timer.stop('Cache')
     

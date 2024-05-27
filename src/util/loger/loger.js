@@ -31,18 +31,15 @@ function Timer() {
   this.index = -1
   this.timers = []
 
-  this.start = function(text = '') {
+  this.start = function() {
     this.timers.push(Date.now())
     this.index++
-    
-    console.log(`${getLabel('INFO')} ${colorizer(`0ms ${text}`)}`)
   }
 
   this.stop = function(text) {
     const deleteIndex = (this.index >= 1) ? this.timers.length - 1 : 0
     const time = (Date.now() - this.timers[deleteIndex])
 
-    // this.timers = this.timers.filter((_, index) => deleteIndex !== index)
     this.timers.pop()
     this.index--
 

@@ -1,7 +1,7 @@
 import Loger from "../../util/loger/loger.js"
 
-import ProductModel from '../../model/productModel.js'
-import WebsiteSettingsModel from '../../model/websiteSetting.js'
+import ProductModel from '../../model/product.model.js'
+import WebsiteSettingsModel from '../../model/settings.model.js'
 
 import { cache } from "../../../index.js"
 

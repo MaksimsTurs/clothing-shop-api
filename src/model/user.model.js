@@ -7,6 +7,6 @@ export default model('users', new Schema({
   password:   { type: String, required: true },
   email:      { type: String, required: true },
   token:      { type: String, required: true },
-  role:       { type: String, default: 'user' },
-  avatar:     { type: String }
+  role:       { type: String, default: 'USER' },
+  avatar:     { type: String, default: '' }
 },            { timestamps: true }))

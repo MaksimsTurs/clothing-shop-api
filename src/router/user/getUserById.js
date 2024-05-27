@@ -2,8 +2,8 @@ import Loger from "../../util/loger/loger.js"
 
 import { RESPONSE_404 } from "../../constants/error-constans.js"
 
-import UserModel from '../../model/userModel.js'
-import OrderModel from '../../model/orderModel.js'
+import User from '../../model/user.model.js'
+import Order from '../../model/order.model.js'
 
 import { cache } from "../../../index.js"
 
@@ -22,14 +22,16 @@ export default async function getUserById(req) {
 
     Loger.log('Cache MISS, get data from database')
     timer.start(`Finding user by id "${req.params.id}"`)
-    existedUser = await UserModel.findOne({ _id: req.params.id }, commonProjection)
+    existedUser = await User.findOne({ _id: req.params.id }, commonProjection)
     timer.stop(`Complete`)
 
-    Loger.log('User not found')
-    if(!existedUser) return RESPONSE_404("User not found!")
+    if(!existedUser) {
+      Loger.log('User not found')
+      return RESPONSE_404("User not found!")
+    }
 
     timer.start('Get user orders')
-    order = await OrderModel.find({ $and: [{ firstName: existedUser.firstName, secondName: existedUser.secondName }] }, commonProjection)
+    order = await Order.find({ $and: [{ firstName: existedUser.firstName, secondName: existedUser.secondName }] }, commonProjection)
     timer.stop('Complete')
 
     Loger.log('Assign data to response')
@@ -42,8 +44,9 @@ export default async function getUserById(req) {
     }
 
     Loger.log('Update cache')
-    // cache.set(cache.keys.USER_ID + req.params.id, response)
+    cache.set(cache.keys.USER_ID + req.params.id, response)
 
+    Loger.log('Return response')
     return response
   } catch(error) {
     throw new Error(error.message)

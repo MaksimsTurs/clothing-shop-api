@@ -2,8 +2,8 @@ import { RESPONSE_200 } from "../../constants/succes-constans.js"
 
 import Loger from "../../util/loger/loger.js"
 
-import SectionModel from '../../model/productSectionModel.js'
-import ProductModel from '../../model/orderModel.js'
+import SectionModel from '../../model/action.model.js'
+import ProductModel from '../../model/order.model.js'
 
 export default async function removeExpiredSection(req) {  
   try {

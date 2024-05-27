@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken'
 import mongoose from "mongoose"
 import { validationResult } from 'express-validator'
 
-import UserModel from '../../model/userModel.js'
+import User from '../../model/user.model.js'
 
 import { USER_AVATAR_QUALITY } from "../../constants/num-constans.js"
 import { RESPONSE_400, RESPONSE_409 } from "../../constants/error-constans.js"
@@ -23,11 +23,11 @@ export default async function registration(req) {
     let registratedUser, token, avatar
 
     timer.start('Check user input validity')
-    if(!validationResult(req.body).isEmpty() || (password.trim() !== confirmPassword.trim())) return RESPONSE_400('Name or E-Mail is incorrect!')
+    if(!validationResult(req.body).isEmpty() || (password.trim() !== confirmPassword.trim())) return RESPONSE_400('Data is incorect!')
     timer.stop('Complete')
 
     timer.start(`Check is user with firstName "${firstName}" secondName "${secondName}" and email "${email}" exist`)
-    existedUser =  await UserModel.findOne({ $or: [{ $and: [{ firstName }, { secondName }] }, { $or: [{ email }] }] })
+    existedUser = await User.findOne({ $or: [{ $and: [{ firstName }, { secondName }] }, { email }] })
     if(existedUser) return RESPONSE_409("User alredy exist!")
     timer.stop('Complete')
 
@@ -41,15 +41,18 @@ export default async function registration(req) {
     Loger.log('Generating token')
     token = jwt.sign({ _id }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '2d' })
     
-    timer.start(`Converting and saving user avatar, img quality ${USER_AVATAR_QUALITY}`)
-    if(files.length > 0) avatar = await convertAndSave(files, USER_AVATAR_QUALITY)
-    timer.stop('Complete')
+    if(files.length > 0) {
+      timer.start(`Converting and saving user avatar, img quality ${USER_AVATAR_QUALITY}`)
+      avatar = await convertAndSave(files, USER_AVATAR_QUALITY)
+      timer.stop('Complete')
+    }
 
 
     timer.start('Creating and saving new user')
-    registratedUser = await UserModel.create({ _id, firstName, secondName, email, token, password: await bcrypt.hash(password, salt), avatar: avatar?.[0] || null })
+    registratedUser = await User.create({ _id, firstName, secondName, email, token, password: await bcrypt.hash(password, salt), avatar: avatar?.[0] || null })
     timer.stop('Complete')
 
+    Loger.log('Return user data')
     return { id: registratedUser._id, avatar: registratedUser.avatar, name: `${firstName} ${secondName}`, token }
   } catch(error) {
     throw new Error(error.message)

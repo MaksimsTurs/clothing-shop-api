@@ -3,8 +3,8 @@ import { v2 as cloudinary } from 'cloudinary'
 import streamifier from 'streamifier'
 
 export default async function convertAndSave(imgs, quality) {
-  if(Array.isArray(imgs)) return await saveMultiple(imgs, quality)
-  return await saveSingle(imgs, quality)
+  if(Array.isArray(imgs)) return await saveMultiple(imgs, quality) || []
+  return await saveSingle(imgs, quality) || []
 }
 
 async function saveSingle(img, quality) {

@@ -1,4 +1,4 @@
-export default function isUndefinedOrNull(what) {
-  if(!what || what === 'undefined' || what === 'null' || (typeof what === 'string' && what.length === 0)) return true
+export default function isUndefinedOrNull(some) {
+  if(some === 'undefined' || some === 'null' || typeof some === 'undefined') return true
   return false
 }

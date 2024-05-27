@@ -10,7 +10,7 @@ import { CACHE_KEYS, DEV_HOST } from '../constants/string-constans.js'
 
 import proxifier from "../router/routerProxifier.js"
 
-import WebsiteSettingModel from '../model/websiteSetting.js'
+import WebsiteSettingModel from '../model/settings.model.js'
 
 import registration from "../router/user/registration.js"
 import login from "../router/user/login.js"
@@ -29,16 +29,18 @@ import checkout from "../router/other/checkout.js"
 import createOrder from "../router/other/createOrder.js"
 import closeTransaction from "../router/other/closeTransaction.js"
 
-import editUserAdmin from '../router/admin/editUserAdmin.js'
-import addProduct from '../router/admin/addProduct.js'
-import addSection from '../router/admin/addSection.js'
+import insertProduct from '../router/admin/insertProduct.js'
+import insertProductAction from '../router/admin/insertProductAction.js'
+import insertCategory from "../router/admin/insertCategory.js"
+import updateProduct from '../router/admin/updateProduct.js'
+import updateProductAction from '../router/admin/updateProductAction.js'
+import updateCategory from '../router/admin/updateCategory.js'
+import updateUserAdmin from '../router/admin/updateUserAdmin.js'
+import updateSetting from '../router/admin/updateSetting.js'
+import removeItem from '../router/admin/removeItem.js'
 import changeOrderStatus from '../router/admin/changeOrderStatus.js'
 import controllUser from '../router/admin/controllUser.js'
-import deleteItem from '../router/admin/deleteItem.js'
 import getStoreData from '../router/admin/getStoreData.js'
-import changeWebsiteSetting from '../router/admin/changeWebsiteSetting.js'
-import editSection from '../router/admin/editSection.js'
-import editProduct from '../router/admin/editProduct.js'
 
 import multer, { memoryStorage } from "multer";
 
@@ -50,33 +52,63 @@ export default async function setupServer(server) {
 
     Loger.log(`Server starting in mode "${process.env.NODE_ENV.trim()}"`)
 
-    timer.start('Start listening server and connecting to mongodb')
+    timer.start('Listening server and connecting to mongodb')
     server.listen(DEV_PORT, DEV_HOST)  
     await connectDB()
-    timer.stop('Complete')
+    timer.stop('Listening server and connecting to mongodb')
 
-    timer.start('Getting website settings from database')
+    timer.start('')
     const settings = (await WebsiteSettingModel.find())[0]
-    timer.stop('Complete')
+    timer.stop('Getting website settings from database')
 
     if(!settings) {
       Loger.log('No settings was founded')
       timer.start('Creating and saving website settings')
       await WebsiteSettingModel.create({ defaultDeliveryFee: 5, isAllProductsHidden: false, key: 'websitesettings', maxProductsPerPage: 12 })
-      timer.stop('Complete')
+      timer.stop('Creating and saving website settings')
     } 
 
     Loger.log('Proxyfying route functions')
-    const User = proxifier([registration, login, getUserById, editUser, deleteUser, authorizate])
-    const Product = proxifier([getProductById, productPaginationFilter, getProductByTitle])
-    const Other = proxifier([getHomePageData, removeExpiredSection, checkout, createOrder, closeTransaction])
-    const Admin = proxifier([editProduct, editSection, editUserAdmin, addProduct, addSection, changeOrderStatus, changeWebsiteSetting, controllUser, deleteItem, getStoreData])
+    const User = proxifier([
+      registration, 
+      login, 
+      getUserById, 
+      editUser, 
+      deleteUser, 
+      authorizate
+    ])
+    const Product = proxifier([
+      getProductById, 
+      productPaginationFilter, 
+      getProductByTitle
+    ])
+    const Other = proxifier([
+      getHomePageData, 
+      removeExpiredSection, 
+      checkout, 
+      createOrder, 
+      closeTransaction
+    ])
+    const Admin = proxifier([
+      insertProduct, 
+      insertProductAction, 
+      updateProduct, 
+      updateProductAction, 
+      updateCategory,
+      updateUserAdmin, 
+      changeOrderStatus, 
+      removeItem, 
+      updateSetting,
+      controllUser, 
+      insertCategory,
+      getStoreData
+    ])
     
     Loger.log('Creating memory storage for image uploader')
     const storage = memoryStorage({ filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`) })
 
     Loger.log('Creating cache storage')
-    const cache = new CreateCache({ cacheKeys: CACHE_KEYS })
+    const cache = new CreateCache({ cacheKeys: CACHE_KEYS, isDisable: false })
 
     return { cache, upload: multer({ storage }), User, Product, Other, Admin }
   } catch(error) {

@@ -7,10 +7,10 @@ import { RESPONSE_403, RESPONSE_404 } from "../../constants/error-constans.js"
 import mongoose, { isValidObjectId } from "mongoose"
 import { validationResult } from "express-validator"
 
-import ProductModel from '../../model/productModel.js'
-import OrderModel from '../../model/orderModel.js'
-import SectionModel from '../../model/productSectionModel.js'
-import UserModel from '../../model/userModel.js'
+import ProductModel from '../../model/product.model.js'
+import OrderModel from '../../model/order.model.js'
+import SectionModel from '../../model/action.model.js'
+import UserModel from '../../model/user.model.js'
 
 import { cache } from "../../../index.js"
 
