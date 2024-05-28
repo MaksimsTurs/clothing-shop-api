@@ -18,13 +18,13 @@ export default async function updateProductAction(req) {
     updatedAction = await Action.findByIdAndUpdate(_id, checker.isNotEmpty(req.body, ['categoryName', 'productsID']), { new: true })
     timer.stop(`Find action by id "${_id}"`)
 
-    const newProducts = [...updatedAction.productsID, ...productsID]
+    const newProductsID = [...updatedAction.productsID, ...productsID]
     
     if(checker.isNotEmpty(categoryName)) {
       timer.stop()
       updatedCategory = await Category.findOneAndUpdate({ title: categoryName }, { actionID: _id })
       updatedAction.categoryID = updatedCategory._id
-      await Product.updateMany({ _id: { $in: newProducts } }, { actionID: updatedAction._id }) 
+      await Product.updateMany({ _id: { $in: newProductsID } }, { actionID: updatedAction._id }) 
       for(let index = 0; index < updatedCategory.productsID.length; index++) {
         Loger.log(`Remove cache key "${cache.keys.PRODUCT_ID}${productsID[index]}}"`)
         cache.remove(cache.keys.PRODUCT_ID + productsID[index])
@@ -34,7 +34,7 @@ export default async function updateProductAction(req) {
     
     if(checker.isNotEmpty(productsID)) {
       timer.start()
-      await Product.updateMany({ _id: { $in: newProducts }}, { actionID: updatedAction._id }) 
+      await Product.updateMany({ _id: { $in: newProductsID }}, { actionID: updatedAction._id }) 
       for(let index = 0; index < productsID.length; index++) {
         Loger.log(`Remove product cache by id "${productsID[index]}}"`)
         cache.remove(cache.keys.PRODUCT_ID + productsID[index])

@@ -38,6 +38,7 @@ import updateProductAction from '../router/admin/updateProductAction.js'
 import updateCategory from '../router/admin/updateCategory.js'
 import updateUserAdmin from '../router/admin/updateUserAdmin.js'
 import updateSetting from '../router/admin/updateSetting.js'
+import clearCache from '../router/admin/clearCache.js'
 import removeItem from '../router/admin/removeItem.js'
 import changeOrderStatus from '../router/admin/changeOrderStatus.js'
 import controllUser from '../router/admin/controllUser.js'
@@ -70,7 +71,7 @@ export default async function setupServer(server) {
     const User = proxifier([registration, login, getUserById, editUser, deleteUser, authorizate])
     const Product = proxifier([getProductById, productPaginationFilter, getProductByTitle])
     const Other = proxifier([getHomePageData, removeExpiredAction, checkout, createOrder, closeTransaction])
-    const Admin = proxifier([insertProduct, insertProductAction, updateProduct, updateProductAction, updateCategory, updateUserAdmin, changeOrderStatus, removeItem, updateSetting, controllUser, insertCategory, getStoreData])
+    const Admin = proxifier([insertProduct, insertProductAction, updateProduct, updateProductAction, updateCategory, updateUserAdmin, clearCache, changeOrderStatus, removeItem, updateSetting, controllUser, insertCategory, getStoreData])
     timer.stop('Proxyfiyng route callbacks to logging default request\\response data')
 
     Loger.log('Creating memory storage for image uploading')

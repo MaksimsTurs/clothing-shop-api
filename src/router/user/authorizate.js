@@ -5,5 +5,5 @@ export default async function authorizate(req ) {
 
   if(authResponse.code !== 200) return authResponse
 
-  return { name: `${authResponse.firstName} ${authResponse.secondName}`, id: authResponse._id, avatar: authResponse.avatar, token: authResponse.token }  
+  return { name: `${authResponse.firstName} ${authResponse.secondName}`, id: authResponse._id, avatar: authResponse.avatar }  
 }

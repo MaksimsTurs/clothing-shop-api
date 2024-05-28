@@ -17,26 +17,24 @@ export default async function insertProductAction(req) {
     let newAction
 
     timer.start()
-    newAction = new Action({ _id: new mongoose.Types.ObjectId(), ...checker.isNotEmpty(req.body) })
+    newAction = new Action({ _id: new mongoose.Types.ObjectId(), ...checker.isNotEmpty(req.body, ['categoryName']) })
     timer.stop('Create new action')
 
     if(checker.isNotEmpty(categoryName)) {
       timer.start()
       newAction.categoryID = (await Category.findOneAndUpdate({ title: categoryName }, { actionID: newAction._id }))._id
-      timer.stop(`Find category by title "${categoryName}"`)
+      timer.stop(`Find category by title "${categoryName}" and add "categoryID" in to action "${req.body.title}"`)
     }
 
     if(checker.isNotEmpty(productsID)) {
       timer.start()
       await Product.updateMany({ _id: { $in: productsID } }, { actionID: newAction._id })
-      timer.stop('Update products')
-
       timer.start()
       for(let index = 0; index < productsID.length; index++) {
         Loger.log(`Removed cache by key "${cache.keys.PRODUCT_ID}${productsID[index]}"`)
         cache.remove(cache.keys.PRODUCT_ID + productsID[index])
       }
-      timer.stop('Remove cache')
+      timer.stop('Remove cache and update some products')
     }
 
     Loger.log(`Remove other cache with keys "${cache.keys.ADMIN_STORE_DATA}", "${cache.keys.HOME_DATA}"`)
