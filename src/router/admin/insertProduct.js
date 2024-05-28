@@ -1,6 +1,5 @@
 import Loger from "../../util/loger/loger.js"
-import isUndefinedOrNull from '../../util/isUndefinedOrNull.js'
-import isDefined from "../../util/isDefined.js"
+import checker from "../../util/checker.js"
 
 import convertAndSave from "../../util/data-utils/convertAndSave.js"
 
@@ -30,18 +29,19 @@ export default async function insertProduct(req) {
     }
 
     timer.start()
-    newProduct = new Product({ _id: new mongoose.Types.ObjectId(), images, ...isDefined.assign(req.body).check(['action', 'category']) })
+    newProduct = new Product({ _id: new mongoose.Types.ObjectId(), images, ...checker.isNotEmpty(req.body, ['action', 'category']) })
     timer.stop('Create new product')	
 
-    if(!isDefined.isEmptyString(action)) {
+    if(checker.isNotEmpty(action)) {
       timer.start()
-      newProduct.actionID = (await Action.findOneAndUpdate({ title: action }, { $push: { productsID: newProduct._id } }, { new: true }))._id
+      newProduct.actionID = (await Action.findOneAndUpdate({ title: action }, { $push: { productsID: newProduct._id } }))._id
       timer.stop('Update action and add "actionID" in to product')
     }
 
-    if(!isDefined.isEmptyString(category)) {
+    if(checker.isNotEmpty(category)) {
       timer.start()
-      updatedCategory = await Category.findOneAndUpdate({ title: category }, { $push: { productsID: newProduct._id } }, { new: true })
+      console.log(checker.isNotEmpty(category))
+      updatedCategory = await Category.findOneAndUpdate({ title: category }, { $push: { productsID: newProduct._id } })
       newProduct.categoryID = updatedCategory._id
 
       if(action && updatedCategory.actionID) {
@@ -49,10 +49,9 @@ export default async function insertProduct(req) {
         return RESPONSE_400("Category is alredy in action!")
       }
       
-      if(updatedCategory.actionID) {
+      if(updatedCategory?.actionID) {
         timer.start()
-        await Action.findOneAndUpdate({ _id: updatedCategory.actionID }, { $push: { productsID: newProduct._id } })
-        newProduct.actionID = updatedCategory.actionID
+        newProduct.actionID = (await Action.findOneAndUpdate({ _id: updatedCategory.actionID }, { $push: { productsID: newProduct._id } }))._id
         timer.stop(`Push "${newProduct._id}" into action with id "${updatedCategory.actionID}"`)
       }
       timer.stop('Update category and add "categoryID" in to product')

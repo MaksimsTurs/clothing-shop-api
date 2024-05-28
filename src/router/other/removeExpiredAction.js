@@ -5,7 +5,7 @@ import Loger from "../../util/loger/loger.js"
 import SectionModel from '../../model/action.model.js'
 import ProductModel from '../../model/order.model.js'
 
-export default async function removeExpiredSection(req) {  
+export default async function removeExpiredAction(req) {  
   try {
     const timer = new Loger.create.Timer()
     const title = req.params.title.replaceAll('%20', ' ')

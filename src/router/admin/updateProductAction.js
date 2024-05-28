@@ -1,5 +1,5 @@
 import Loger from "../../util/loger/loger.js"
-import isDefined from "../../util/isDefined.js"
+import checker from "../../util/checker.js"
 
 import Action from '../../model/action.model.js'
 import Product from '../../model/product.model.js'
@@ -15,14 +15,16 @@ export default async function updateProductAction(req) {
     let updatedAction, updatedCategory
 
     timer.start()
-    updatedAction = await Action.findByIdAndUpdate(_id, {...isDefined.assign(req.body).check(['categoryName']) })
+    updatedAction = await Action.findByIdAndUpdate(_id, checker.isNotEmpty(req.body, ['categoryName', 'productsID']), { new: true })
     timer.stop(`Find action by id "${_id}"`)
+
+    const newProducts = [...updatedAction.productsID, ...productsID]
     
-    if(!isDefined.isEmptyString(categoryName)) {
+    if(checker.isNotEmpty(categoryName)) {
       timer.stop()
       updatedCategory = await Category.findOneAndUpdate({ title: categoryName }, { actionID: _id })
       updatedAction.categoryID = updatedCategory._id
-      await Product.updateMany({ _id: { $in: updatedCategory.productsID } }, { actionID: updatedAction._id }) 
+      await Product.updateMany({ _id: { $in: newProducts } }, { actionID: updatedAction._id }) 
       for(let index = 0; index < updatedCategory.productsID.length; index++) {
         Loger.log(`Remove cache key "${cache.keys.PRODUCT_ID}${productsID[index]}}"`)
         cache.remove(cache.keys.PRODUCT_ID + productsID[index])
@@ -30,9 +32,9 @@ export default async function updateProductAction(req) {
       timer.stop(`Find category by name "${categoryName}"`)
     }
     
-    if(productsID.length > 0) {
+    if(checker.isNotEmpty(productsID)) {
       timer.start()
-      await Product.updateMany({ _id: { $in: productsID }}, { actionID: updatedAction._id }) 
+      await Product.updateMany({ _id: { $in: newProducts }}, { actionID: updatedAction._id }) 
       for(let index = 0; index < productsID.length; index++) {
         Loger.log(`Remove product cache by id "${productsID[index]}}"`)
         cache.remove(cache.keys.PRODUCT_ID + productsID[index])
@@ -41,6 +43,7 @@ export default async function updateProductAction(req) {
     }
 
     Loger.log(`Save updated section and cache by key "${cache.keys.ADMIN_STORE_DATA}", "${cache.keys.HOME_DATA}"`)
+    updatedAction.productsID = [...updatedAction.productsID, ...productsID]
     await updatedAction.save()
     cache.remove(cache.keys.ADMIN_STORE_DATA)
     cache.remove(cache.keys.HOME_DATA)

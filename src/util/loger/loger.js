@@ -19,8 +19,8 @@ const Loger = {
     hiddeProp(res, toRedicate)
     console.info(getLabel('RESPONSE'), res)
   },
-  error: function(error, fileName) {
-    console.error(getLabel('ERROR'), { message: error.message, file: fileName })
+  error: function(message, fileName) {
+    console.error(getLabel('ERROR'), { message, file: fileName })
   },
   log: function(text) {
     console.log(`${getLabel('INFO')} ${colorizer(`0ms ${text}`)}`)
@@ -50,7 +50,7 @@ function Timer() {
 function colorizer(text) {
   let textSplited = text.split(' '), logText = ''
   for(let index = 0; index < textSplited.length; index++) {
-    if(/[""]/.test(textSplited[index])) logText += chalk.greenBright(`${textSplited[index]} `)
+    if(/\".+?\"/.test(textSplited[index])) logText += chalk.greenBright(`${textSplited[index]} `)
     else if(!Number.isNaN(parseFloat(textSplited[index]))) logText += `${chalk.yellowBright(textSplited[index])} `
     else logText += `${textSplited[index]} `
   }

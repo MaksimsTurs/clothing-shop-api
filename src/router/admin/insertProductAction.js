@@ -1,6 +1,5 @@
 import Loger from "../../util/loger/loger.js"
-import isUndefinedOrNull from "../../util/isUndefinedOrNull.js"
-import isDefined from "../../util/isDefined.js"
+import checker from "../../util/checker.js"
 
 import Action from '../../model/action.model.js'
 import Product from '../../model/product.model.js'
@@ -18,16 +17,16 @@ export default async function insertProductAction(req) {
     let newAction
 
     timer.start()
-    newAction = new Action({ _id: new mongoose.Types.ObjectId(), ...isDefined.assign(req.body).check() })
+    newAction = new Action({ _id: new mongoose.Types.ObjectId(), ...checker.isNotEmpty(req.body) })
     timer.stop('Create new action')
 
-    if(!isDefined.isEmptyString(categoryName)) {
+    if(checker.isNotEmpty(categoryName)) {
       timer.start()
       newAction.categoryID = (await Category.findOneAndUpdate({ title: categoryName }, { actionID: newAction._id }))._id
       timer.stop(`Find category by title "${categoryName}"`)
     }
 
-    if(productsID.length > 0) {
+    if(checker.isNotEmpty(productsID)) {
       timer.start()
       await Product.updateMany({ _id: { $in: productsID } }, { actionID: newAction._id })
       timer.stop('Update products')

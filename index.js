@@ -5,21 +5,16 @@ import setupServer from './src/config/setupServer.js'
 
 import { loginValidator, registrationValidator, createOrderValidator } from './src/validation/userInput.js'
 
-import Loger from './src/util/loger/loger.js'
-
 const server = express() 
-const timer = new Loger.create.Timer()
 
 server.use(cors())
 server.use(express.json())
 server.use(express.urlencoded({ extended: true }))
 
-timer.start()
 export const { cache, upload, User, Product, Other, Admin } = await setupServer(server)
-timer.stop('Configuring server')
 
 server.get('/',                                 Other.getHomePageData)
-server.get('/remove-section/:title',            Other.removeExpiredSection)
+server.get('/remove-section/:title',            Other.removeExpiredAction)
 server.post('/check-cart',                      Other.checkout)
 server.get('/create-order/:checkID',            Other.createOrder)
 server.post('/close-transaction',               createOrderValidator, Other.closeTransaction)

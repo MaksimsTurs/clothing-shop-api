@@ -8,7 +8,6 @@ import { validationResult } from 'express-validator'
 
 import { RESPONSE_400, RESPONSE_404 } from "../../constants/error-constans.js"
 
-
 export default async function login(req) {
   const timer = new Loger.create.Timer()
   const { firstName, password, email, secondName } = req.body
@@ -17,9 +16,9 @@ export default async function login(req) {
   let isThisUser = false
 
   try {
-    timer.start('Check user input validity')
+    timer.start()
     if(!validationResult(req.body).isEmpty()) return RESPONSE_400("Your data is wrong!")
-    timer.stop('Complete')
+    timer.stop('Check user input validity')
 
     timer.start(`Find user by firstName: "${firstName}" secondName: "${secondName}" and email: "${email}"`)
     existedUser = await User.findOne({ $and: [{ firstName }, { secondName }, { email }] })
@@ -31,9 +30,9 @@ export default async function login(req) {
     isThisUser = await bcrypt.compare(password, existedUser.password)
 
     if(isThisUser) {
-      timer.start('Update user data')
+      timer.start()
       const { _id, token, avatar, firstName, secondName } = await User.findByIdAndUpdate(existedUser._id, { token: jwt.sign({ id: existedUser._id, role: existedUser.role }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '2d' }) }, { new: true })
-      timer.stop('Complete')
+      timer.stop('Update user data')
 
       Loger.log('Assign data to response')
       response = { id: _id, name: `${firstName} ${secondName}`, token, avatar }

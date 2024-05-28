@@ -12,11 +12,7 @@ import { cache } from "../../../index.js"
 export default async function getHomePageData() {
   try {
     const timer = new Loger.create.Timer()
-    
-    const commonProjection = { __v: false, createdAt: false, updatedAt: false }
-    const productProjection = { stock: false }
-    const settingsProjection = { _id: false, key: false }
-    
+        
     let usersCount = 0, productsCount = 0, ordersCount = 0
     let settings, products = [], actions = [], categories = []
 
@@ -29,22 +25,23 @@ export default async function getHomePageData() {
     }
 
     Loger.log('Cache MISS, get data from database')
-    timer.start(`Get website settings from database`)
-    settings = await Settings.findOne({ key: 'default' }, {...commonProjection, ...settingsProjection })
-    timer.stop('Complete')
+    timer.start()
+    settings = await Settings.findOne({ key: 'default' })
+    timer.stop(`Get settings from database`)
 
     if(!settings.isAllProductsHidden) {
-      timer.start('Get products from database their stock > 1')
-      products = await Product.find(undefined, {...commonProjection, ...productProjection }, { populate: ['actionID'] })
+      timer.start()
+      products = await Product.find(undefined, undefined, { populate: ['actionID'] })
       for(let index = 0; index < products.length; index++) {
         products[index]._doc.precent = products[index]?.actionID?.precent || 0
+
         delete products[index]._doc.actionID
       }
-      timer.stop('Complete')
+      timer.stop('Get products from database and insert precent from action when exist')
     }
 
-    timer.start('Get categories there is not hidden, populate "productsID" and "actionID"')
-    categories = await Category.find({ isHidden: false }, commonProjection, { populate: ['productsID', 'actionID'] })
+    timer.start()
+    categories = await Category.find({ isHidden: false }, undefined, { populate: ['productsID', 'actionID'] })
     for(let cindex = 0; cindex < categories.length; cindex++) {
       const category = categories[cindex]
       const action = categories[cindex]?.actionID
@@ -56,22 +53,23 @@ export default async function getHomePageData() {
       delete categories[cindex]._doc.actionID
       delete categories[cindex]._doc.productsID
     }
-    timer.stop('Complete')
+    timer.stop('Get categories there is not hidden, populate "productsID" and "actionID"')
 
-    timer.start('Get actions there is not hidden, populate "productsID"')
-    actions = await Action.find({ isHidden: false }, commonProjection, { populate: ['productsID'] })
+    timer.start()
+    actions = await Action.find({ isHidden: false }, undefined, { populate: ['productsID'] })
     for(let aindex = 0; aindex < actions.length; aindex++) {
       actions[aindex]._doc.products = actions[aindex].productsID
       actions[aindex]._doc.location = 'action'
+
       delete actions[aindex]._doc.productsID
     }
-    timer.stop('Complete')
+    timer.stop('Get actions there is not hidden, populate "productsID"')
 
-    timer.start('Get orders, products and Users count')
+    timer.start()
     ordersCount = await Order.countDocuments()
     usersCount = await User.countDocuments()
     productsCount = await Product.countDocuments()
-    timer.stop('Complete')
+    timer.stop('Get orders, products and users count')
 
     Loger.log('Assign data to response')
     response = { ordersCount, usersCount, productsCount, products, actions, categories }

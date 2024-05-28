@@ -1,5 +1,5 @@
 import Loger from "../../util/loger/loger.js"
-import isDefined from "../../util/isDefined.js"
+import checker from "../../util/checker.js"
 
 import { cache } from "../../../index.js"
 
@@ -12,7 +12,7 @@ export default async function updateSetting(req) {
     let settings
 
     timer.start()
-    settings = await Setting.findOneAndUpdate({ key: 'default' }, {...isDefined.assign(req.body).check()}, { new: true })
+    settings = await Setting.findOneAndUpdate({ key: 'default' }, checker.isNotEmpty(req.body), { new: true })
     timer.stop('Update website settings')
 
     Loger.log('Restore cache')

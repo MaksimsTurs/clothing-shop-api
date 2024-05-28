@@ -1,5 +1,5 @@
 import Loger from "../../util/loger/loger.js"
-import isDefined from "../../util/isDefined.js"
+import checker from "../../util/checker.js"
 
 import Category from '../../model/category.model.js'
 import Product from '../../model/product.model.js'
@@ -16,10 +16,10 @@ export default async function insertCategory(req) {
     let newCategory
 
     timer.start()
-    newCategory = await Category.create({ _id: new mongoose.Types.ObjectId(), productsID, ...isDefined.assign(req.body).check() })
+    newCategory = await Category.create({ _id: new mongoose.Types.ObjectId(), productsID, ...checker.isNotEmpty(req.body) })
     timer.stop('Create new category')
 
-    if(productsID.length > 0) {
+    if(checker.isNotEmpty(productsID)) {
       timer.start()
       await Product.updateMany({ _id: { $in: productsID } }, { categoryID: newCategory._id })
       timer.stop('Update products')
@@ -29,7 +29,7 @@ export default async function insertCategory(req) {
         Loger.log(`Removed cache by key "${cache.keys.PRODUCT_ID}${productsID[index]}"`)
         cache.remove(cache.keys.PRODUCT_ID + productsID[index])
       }
-      timer.stop('Remove cache')
+      timer.stop('Remove full cache')
     }
 
     Loger.log(`Remove other cache with keys "${cache.keys.ADMIN_STORE_DATA}", "${cache.keys.HOME_DATA}"`)

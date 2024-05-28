@@ -1,6 +1,5 @@
 import Loger from "../../util/loger/loger.js"
-import isUndefinedOrNull from "../../util/isUndefinedOrNull.js"
-import isDefined from "../../util/isDefined.js"
+import checker from "../../util/checker.js"
 
 import Product from '../../model/product.model.js'
 import Action from '../../model/action.model.js'
@@ -29,22 +28,22 @@ export default async function updateProduct(req) {
     updatedProduct = await Product.findById(_id)
     timer.stop(`Get products by id "${_id}"`)
 
-    if(!isDefined.isEmptyString(category)) {
+    if(checker.isNotEmpty(category)) {
       timer.start()
       updatedProduct.categoryID = (await Category.findOneAndUpdate({ title: category }, { $push: { productsID: _id } }))._id
       await updatedProduct.save()
-      timer.stop(`Push into category product id "${_id}"`)
+      timer.stop(`Push product id "${_id}" into category "${category}"`)
     }
 
-    if(!isDefined.isEmptyString(action)) {
+    if(checker.isNotEmpty(action)) {
       timer.start()
       updatedProduct.actionID = (await Action.findOneAndUpdate({ title: action }, { $push: { productsID: _id } }))._id
       await updatedProduct.save()
-      timer.stop(`Push into action product id "${_id}"`)
+      timer.stop(`Push product id "${_id}" into action "${actions}"`)
     }
 
     timer.start()
-    updatedProduct = await Product.findByIdAndUpdate(_id, { images: imgs.length > 0 ? imgs : updatedProduct.images, ...isDefined.assign(req.body).check(['action', 'category']) }, { new: true })
+    updatedProduct = await Product.findByIdAndUpdate(_id, { images: imgs.length > 0 ? imgs : updatedProduct.images, ...checker.isNotEmpty(req.body, ['action', 'category']) }, { new: true })
     timer.stop('Updating product and return new Document')
 
     Loger.log(`Remove cache by key "${cache.keys.ADMIN_STORE_DATA}", "${cache.keys.HOME_DATA}", "${cache.keys.PRODUCT_ID + _id}"`)
