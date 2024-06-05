@@ -20,15 +20,18 @@ export default async function login(req) {
     if(!validationResult(req.body).isEmpty()) return RESPONSE_400("Your data is wrong!")
     timer.stop('Check user input validity')
 
-    timer.start(`Find user by firstName: "${firstName}" secondName: "${secondName}" and email: "${email}"`)
+    timer.start()
     existedUser = await User.findOne({ $and: [{ firstName }, { secondName }, { email }] })
-    timer.stop('Complete')
+    timer.stop(`Find user by firstName: "${firstName}" secondName: "${secondName}" and email: "${email}"`)
 
-    if(!existedUser) return RESPONSE_404('User not exist!')
+    if(!existedUser) {
+      Loger.log(`User by firstName: "${firstName}" secondName: "${secondName}" and email: "${email}" not found!`, import.meta.url)
+      return RESPONSE_404('User not exist!')
+    }
 
     Loger.log('Check is user logged')
     isThisUser = await bcrypt.compare(password, existedUser.password)
-
+    
     if(isThisUser) {
       timer.start()
       const { _id, token, avatar, firstName, secondName } = await User.findByIdAndUpdate(existedUser._id, { token: jwt.sign({ id: existedUser._id, role: existedUser.role }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '2d' }) }, { new: true })

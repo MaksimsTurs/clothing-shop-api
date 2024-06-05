@@ -10,8 +10,6 @@ import { cache } from "../../../index.js"
 export default async function getUserById(req) {
   try {
     const timer = new Loger.create.Timer()
-    const commonProjection = { __v: false, createdAt: false, updatedAt: false }
-
     let response = cache.get(cache.keys.USER_ID + req.params.id), existedUser
     let order = []  
 
@@ -21,18 +19,18 @@ export default async function getUserById(req) {
     }
 
     Loger.log('Cache MISS, get data from database')
-    timer.start(`Finding user by id "${req.params.id}"`)
-    existedUser = await User.findOne({ _id: req.params.id }, commonProjection)
-    timer.stop(`Complete`)
+    timer.start()
+    existedUser = await User.findOne({ _id: req.params.id }, { password: false })
+    timer.stop(`Finding user by id "${req.params.id}"`)
 
     if(!existedUser) {
       Loger.log('User not found')
       return RESPONSE_404("User not found!")
     }
 
-    timer.start('Get user orders')
-    order = await Order.find({ $and: [{ firstName: existedUser.firstName, secondName: existedUser.secondName }] }, commonProjection)
-    timer.stop('Complete')
+    timer.start()
+    order = await Order.find({ $and: [{ firstName: existedUser.firstName, secondName: existedUser.secondName }] })
+    timer.stop('Get user orders')
 
     Loger.log('Assign data to response')
     response = { 
@@ -40,6 +38,7 @@ export default async function getUserById(req) {
       name: `${existedUser.firstName} ${existedUser.secondName}`,
       avatar: existedUser.avatar, 
       email: existedUser.email,
+      registratedAt: existedUser.createdAt,
       order
     }
 

@@ -22,14 +22,14 @@ export default async function registration(req) {
     let salt = '', _id = ''
     let registratedUser, token, avatar
 
-    timer.start('Check user input validity')
+    timer.start()
     if(!validationResult(req.body).isEmpty() || (password.trim() !== confirmPassword.trim())) return RESPONSE_400('Data is incorect!')
-    timer.stop('Complete')
+    timer.stop('Check user input validity')
 
-    timer.start(`Check is user with firstName "${firstName}" secondName "${secondName}" and email "${email}" exist`)
+    timer.start()
     existedUser = await User.findOne({ $or: [{ $and: [{ firstName }, { secondName }] }, { email }] })
     if(existedUser) return RESPONSE_409("User alredy exist!")
-    timer.stop('Complete')
+    timer.stop(`Check is user with firstName "${firstName}" secondName "${secondName}" and email "${email}" exist`)
 
 
     Loger.log('Generating password salt')
@@ -42,15 +42,24 @@ export default async function registration(req) {
     token = jwt.sign({ _id }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '2d' })
     
     if(files.length > 0) {
-      timer.start(`Converting and saving user avatar, img quality ${USER_AVATAR_QUALITY}`)
+      timer.start()
       avatar = await convertAndSave(files, USER_AVATAR_QUALITY)
-      timer.stop('Complete')
+      timer.stop(`Converting and saving user avatar, img quality ${USER_AVATAR_QUALITY}`)
     }
 
 
-    timer.start('Creating and saving new user')
-    registratedUser = await User.create({ _id, firstName, secondName, email, token, password: await bcrypt.hash(password, salt), avatar: avatar?.[0] || null })
-    timer.stop('Complete')
+    timer.start()
+    registratedUser = await User.create({ 
+      _id, 
+      firstName, 
+      secondName, 
+      email, 
+      token, 
+      password: await bcrypt.hash(password, salt), 
+      avatar: avatar?.[0] || null, 
+      precent: 0.2
+    })
+    timer.stop('Creating and saving new user')
 
     Loger.log('Return user data')
     return { id: registratedUser._id, avatar: registratedUser.avatar, name: `${firstName} ${secondName}`, token }

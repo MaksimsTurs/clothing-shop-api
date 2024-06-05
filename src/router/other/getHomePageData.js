@@ -1,4 +1,6 @@
+import isAuth from "../../util/isAuth.js"
 import Loger from "../../util/loger/loger.js"
+import getAuthHeader from "../../util/getAuthHeader.js"
 
 import Product from '../../model/product.model.js'
 import Action from '../../model/action.model.js'
@@ -9,7 +11,7 @@ import Settings from '../../model/settings.model.js'
 
 import { cache } from "../../../index.js"
 
-export default async function getHomePageData() {
+export default async function getHomePageData(req) {
   try {
     const timer = new Loger.create.Timer()
         
@@ -19,10 +21,14 @@ export default async function getHomePageData() {
     Loger.log('Trying to get data from cache')
     let response = cache.get(cache.keys.HOME_DATA)
   
-    if(response) {
-      Loger.log('Cache HIT, send response to client')
-      return response
-    }
+    // if(response) {
+    //   Loger.log('Cache HIT, send response to client')
+    //   return response
+    // }
+
+    timer.start()
+    const user = await isAuth(getAuthHeader(req))
+    timer.start('Get user by token when authorizated')
 
     Loger.log('Cache MISS, get data from database')
     timer.start()
@@ -33,7 +39,8 @@ export default async function getHomePageData() {
       timer.start()
       products = await Product.find(undefined, undefined, { populate: ['actionID'] })
       for(let index = 0; index < products.length; index++) {
-        products[index]._doc.precent = products[index]?.actionID?.precent || 0
+        if(products[index]._doc?.actionID) products[index]._doc.precent = products[index]?.actionID?.precent || 0
+        else products[index]._doc.precent = user.precent
 
         delete products[index]._doc.actionID
       }

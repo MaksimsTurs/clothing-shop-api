@@ -8,5 +8,6 @@ export default model('users', new Schema({
   email:      { type: String, required: true },
   token:      { type: String, required: true },
   role:       { type: String, default: 'USER' },
-  avatar:     { type: String, default: '' }
+  avatar:     { type: String, default: '' },
+  precent:    { type: Number, default: 0.2 }
 },            { timestamps: true }))
