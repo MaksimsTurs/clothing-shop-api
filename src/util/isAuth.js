@@ -24,8 +24,8 @@ export default async function isAuth(secret, isAdmin) {
     token = jwt.verify(secret, process.env.CREATE_TOKEN_SECRET)
     if(!token) return RESPONSE_403(USER_ARE_NOT_AUTHORIZATED)
 
-    Loger.log(`Find user by id "${token._id}"`)
-    existedUser = await UserModel.findById(token._id)
+      Loger.log(`Find user by id "${token.id}"`)
+    existedUser = await UserModel.findById(token.id)
 
     if(!existedUser) return RESPONSE_404(USER_NOT_FOUND)
     

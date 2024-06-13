@@ -39,7 +39,7 @@ export default async function registration(req) {
     _id = new mongoose.Types.ObjectId()
     
     Loger.log('Generating token')
-    token = jwt.sign({ _id }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '2d' })
+    token = jwt.sign({ id: _id }, process.env.CREATE_TOKEN_SECRET, { expiresIn: '2d' })
     
     if(files.length > 0) {
       timer.start()
