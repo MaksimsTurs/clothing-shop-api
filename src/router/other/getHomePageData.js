@@ -1,3 +1,4 @@
+import isNewUser from "../../util/isNewUser.js"
 import isAuth from "../../util/isAuth.js"
 import Loger from "../../util/loger/loger.js"
 import getAuthHeader from "../../util/getAuthHeader.js"
@@ -28,6 +29,7 @@ export default async function getHomePageData(req) {
 
     timer.start()
     const user = await isAuth(getAuthHeader(req))
+    const isNew = isNewUser(user.createdAt)
     timer.start('Get user by token when authorizated')
 
     Loger.log('Cache MISS, get data from database')
@@ -40,7 +42,7 @@ export default async function getHomePageData(req) {
       products = await Product.find(undefined, undefined, { populate: ['actionID'] })
       for(let index = 0; index < products.length; index++) {
         if(products[index]._doc?.actionID) products[index]._doc.precent = products[index]?.actionID?.precent || 0
-        else products[index]._doc.precent = user.precent
+        else if(isNew) products[index]._doc.precent = user.precent
 
         delete products[index]._doc.actionID
       }

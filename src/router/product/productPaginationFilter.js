@@ -1,5 +1,8 @@
 import Loger from "../../util/loger/loger.js"
 import isUndefinedOrNull from '../../util/isUndefinedOrNull.js'
+import isAuth from '../../util/isAuth.js'
+import getAuthHeader from '../../util/getAuthHeader.js'
+import isNewUser from '../../util/isNewUser.js'
 
 import Product from '../../model/product.model.js'
 import Category from '../../model/category.model.js'
@@ -28,6 +31,9 @@ export default async function productPaginationFilter(req) {
     let productsRange = { max: 0, min: 0 }
     let locationTitle
 
+    const user = await isAuth(getAuthHeader(req))
+    const isNew = isNewUser(user.createdAt)
+
     if(locations.includes(location)) {
       Loger.log(`Check objectID "${id}" validity`)
       if(!isValidObjectId(id)) {
@@ -39,7 +45,7 @@ export default async function productPaginationFilter(req) {
         const category = await Category.findById(id, undefined, { populate: ['productsID', 'actionID'] })
         locationTitle = category.title
         for(let index = 0; index < category.productsID.length; index++) {
-          items.push({...category.productsID[index]._doc, precent: category.actionID?.precent || 0 })
+          items.push({...category.productsID[index]._doc, precent: (isNew ? user.precent : category.actionID?.precent) || 0 })
         }
       } else {
         const action = await Action.findById(id, undefined, { populate: ['productsID'] })
@@ -62,7 +68,8 @@ export default async function productPaginationFilter(req) {
       }
 
       for(let index = 0; index < items.length; index++) {
-        items[index]._doc.precent = items[index]?.actionID?.precent || 0
+        if(items[index]?.actionID) items[index]._doc.precent = items[index]?.actionID?.precent || 0
+        else if(isNew) items[index]._doc.precent = user.precent || 0
         delete items[index]._doc.actionID
       }
       timer.stop('Complete')

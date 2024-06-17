@@ -2,7 +2,7 @@ import isAuth from "../../util/isAuth.js";
 import isNewUser from '../../util/isNewUser.js'
 import getAuthHeader from '../../util/getAuthHeader.js'
 
-export default async function authorizate(req) {
+export default async function authenticate(req) {
   const authResponse = await isAuth(getAuthHeader(req))
 
   if(authResponse.code !== 200) return authResponse

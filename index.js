@@ -21,7 +21,7 @@ server.post('/close-transaction',               createOrderValidator, Other.clos
 /*----------------------------------------------------------------------------------------------------*/
 server.get('/user/:id',                         User.getUserById)
 server.get('/user/remove/:id',                  User.deleteUser)
-server.post('/user/auth',                       User.authorizate)
+server.post('/user/auth',                       User.authenticate)
 server.post("/user/login",                      upload.any(), loginValidator, User.login)
 server.post("/user/registration",               upload.any(), registrationValidator, User.registration)
 server.post('/user/edit',                       upload.any(), User.editUser)

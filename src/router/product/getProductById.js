@@ -1,6 +1,7 @@
 import { isValidObjectId } from "mongoose"
 
 import Loger from "../../util/loger/loger.js"
+import isNewUser from "../../util/isNewUser.js"
 import isAuth from "../../util/isAuth.js"
 import getAuthHeader from "../../util/getAuthHeader.js"
 
@@ -23,6 +24,7 @@ export default async function getProductById(req) {
 
     timer.start()
     const user = await isAuth(getAuthHeader(req))
+    const isNew = isNewUser(user.createdAt)
     timer.start('Get user by token when authorizated')
 
     Loger.log('Cache MISS, get data from database')
@@ -34,7 +36,7 @@ export default async function getProductById(req) {
     if(product?.actionID) {
       product._doc.precent = product?.actionID?.precent || 0
       product._doc.actionID = product?.actionID?._id
-    } else product._doc.precent = user.precent
+    } else if(isNew) product._doc.precent = user.precent
 
     product._doc.category = product?.categoryID?.title
     product._doc.categoryID = product?.categoryID?._id

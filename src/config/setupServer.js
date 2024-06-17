@@ -18,7 +18,7 @@ import login from "../router/user/login.js"
 import getUserById from "../router/user/getUserById.js"
 import editUser from "../router/user/editUser.js"
 import deleteUser from "../router/user/deleteUser.js"
-import authorizate from "../router/user/authorizate.js"
+import authenticate from "../router/user/authenticate.js"
 
 import getProductById from "../router/product/getProductById.js"
 import productPaginationFilter from "../router/product/productPaginationFilter.js"
@@ -68,7 +68,7 @@ export default async function setupServer(server) {
     } 
 
     timer.start()
-    const User = proxifier([registration, login, getUserById, editUser, deleteUser, authorizate])
+    const User = proxifier([registration, login, getUserById, editUser, deleteUser, authenticate])
     const Product = proxifier([getProductById, productPaginationFilter, getProductByTitle])
     const Other = proxifier([getHomePageData, removeExpiredAction, checkout, createOrder, closeTransaction])
     const Admin = proxifier([insertProduct, insertProductAction, updateProduct, updateProductAction, updateCategory, updateUserAdmin, clearCache, changeOrderStatus, removeItem, updateSetting, controllUser, insertCategory, getStoreData])

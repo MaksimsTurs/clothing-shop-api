@@ -22,6 +22,10 @@ const checker = {
     }
 
     return true
+  },
+  isUndefinedOrNull: function(toCheck) {
+    if(toCheck === 'undefined' || toCheck === 'null' || typeof toCheck === 'undefined') return true
+    return false
   }
 }
 

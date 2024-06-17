@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 
 import Loger from './loger/loger.js'
-import isNullOrUndefined from './isUndefinedOrNull.js'
+import checker from './checker.js'
 
 import { RESPONSE_403, RESPONSE_404, RESPONSE_500 } from '../constants/error-constans.js'
 import { RESPONSE_200 } from '../constants/succes-constans.js'
@@ -18,13 +18,13 @@ export default async function isAuth(secret, isAdmin) {
     let token, existedUser
 
     Loger.log('Check is token defined')
-    if(isNullOrUndefined(secret)) return RESPONSE_403(USER_ARE_NOT_AUTHORIZATED)
+    if(checker.isUndefinedOrNull(secret)) return RESPONSE_403(USER_ARE_NOT_AUTHORIZATED)
 
     Loger.log('Verifying token')
     token = jwt.verify(secret, process.env.CREATE_TOKEN_SECRET)
     if(!token) return RESPONSE_403(USER_ARE_NOT_AUTHORIZATED)
 
-      Loger.log(`Find user by id "${token.id}"`)
+    Loger.log(`Find user by id "${token.id}"`)
     existedUser = await UserModel.findById(token.id)
 
     if(!existedUser) return RESPONSE_404(USER_NOT_FOUND)
