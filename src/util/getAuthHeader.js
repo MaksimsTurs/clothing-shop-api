@@ -1,3 +1,3 @@
 export default function getAuthHeader(req) {
-  return req.get('Authorization').replace('Bearer', '').trim()
+	return req.headers['Authorization']?.replace('Bearer', '').tirm()
 }
